@@ -46,6 +46,16 @@ model SubAccount {
   primaryDomain String? @unique
   businessPhone String? // shown as a click-to-call CTA on the public site
 
+  // Local SEO / structured data (schema.org LocalBusiness) - this is what
+  // Google, Bing, and AI answer engines (ChatGPT, Perplexity, Google AI
+  // Overviews) actually pull structured facts from, more reliably than
+  // plain text on the page.
+  streetAddress String?
+  seoCity       String?
+  seoState      String?
+  seoZip        String?
+  serviceAreas  String[] @default([]) // "San Antonio, Alamo Heights, Boerne"
+
   // Branded sending email (Resend) - separate from any real hosted inbox
   // TRANSACTIONAL domain: invoices, reply threads, anything tied to an existing
   // customer relationship. Keep this domain's reputation clean.
@@ -351,6 +361,10 @@ model Site {
   isHomepage   Boolean  @default(false) // renders at the bare domain root
   templateId   String   // which base template this was generated from
   contentJson  Json     // form-filled + auto-pulled data used to generate the page
+  seoTitle     String?  // <title> tag - falls back to a generated one if unset
+  seoDescription String? // meta description - falls back to a generated one if unset
+  faqItems     Json?    // [{question, answer}] - powers FAQPage schema, which AI
+                         // answer engines and voice assistants pull direct answers from
   status       SiteStatus @default(DRAFT) // DRAFT = saved but not live, PUBLISHED = live on the domain
 
   createdAt    DateTime @default(now())

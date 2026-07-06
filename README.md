@@ -167,6 +167,33 @@ and break the CRM.
 layout (hero, selling points, call button) used for every site, styled with
 that sub-account's brand color/logo/phone. Not fancy yet, but real and live.
 
+## SEO / AEO (answer engine optimization)
+Built into every public site automatically:
+- **Structured data (schema.org JSON-LD)**: LocalBusiness (typed per industry -
+  RoofingContractor, HVACBusiness, AutoDetailing, etc.) with address, phone,
+  service areas. This is what Google, Bing, and AI answer engines (ChatGPT,
+  Perplexity, Google AI Overviews) actually parse for facts.
+- **FAQPage schema** - add FAQs per site (`Question | Answer` per line in the
+  site form). Visible on the page AND in structured data - this is
+  specifically what voice assistants (Siri, Alexa via Bing/Google's index)
+  and AI chat answer engines pull direct answers from.
+- **Dynamic meta tags** per page - title, description, Open Graph, Twitter
+  Card, canonical URL. Auto-generated if you leave the SEO fields blank.
+- **Per-domain `robots.txt` and `sitemap.xml`** - correct for whichever
+  client domain is being visited, allows all crawlers (including AI bot
+  crawlers like GPTBot, ClaudeBot, PerplexityBot - they respect standard
+  robots.txt same as Googlebot).
+
+**What this does NOT do, and no software can:**
+- Guarantee a ranking position - that's earned through backlinks, reviews,
+  content depth, and time, same as any competitor
+- Submit sites to Google/Bing automatically - you still manually add each
+  domain to Google Search Console and Bing Webmaster Tools (both free, one-
+  time per domain, ~5 min) and submit the sitemap URL there
+- Guarantee inclusion in any specific AI answer engine - those crawl and
+  select sources on their own criteria; good structured data improves the
+  odds, it doesn't force it
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

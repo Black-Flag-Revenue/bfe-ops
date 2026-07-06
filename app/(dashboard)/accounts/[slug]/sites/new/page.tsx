@@ -14,6 +14,16 @@ export default async function NewSitePage({ params }: { params: { slug: string }
     const neighborhood = formData.get('neighborhood') as string;
     const heroHeadline = formData.get('heroHeadline') as string;
     const sellingPoints = formData.get('sellingPoints') as string;
+    const seoTitle = (formData.get('seoTitle') as string) || null;
+    const seoDescription = (formData.get('seoDescription') as string) || null;
+
+    // FAQ input: one Q&A pair per line, separated by "|"
+    const faqRaw = (formData.get('faqItems') as string) || '';
+    const faqItems = faqRaw
+      .split('\n')
+      .map((line) => line.split('|').map((s) => s.trim()))
+      .filter((parts) => parts.length === 2 && parts[0] && parts[1])
+      .map(([question, answer]) => ({ question, answer }));
 
     const pathSlugRaw = formData.get('pathSlug') as string;
     const isHomepage = formData.get('isHomepage') === 'on';
@@ -31,6 +41,9 @@ export default async function NewSitePage({ params }: { params: { slug: string }
         isHomepage,
         templateId: 'default',
         contentJson: { heroHeadline, sellingPoints },
+        seoTitle,
+        seoDescription,
+        faqItems: faqItems.length > 0 ? faqItems : undefined,
         status: 'DRAFT',
       },
     });
@@ -44,7 +57,7 @@ export default async function NewSitePage({ params }: { params: { slug: string }
         <h1 className="font-display text-3xl tracking-wide">New Site — {subAccount.name}</h1>
         <p className="mt-1 text-sm text-muted">
           Fill in what makes this page local. Auto-pulled data (storm history, satellite imagery
-          dates) and one-click deploy are the next build - this saves the page as a draft for now.
+          dates) is a future build - this saves the page as a draft for now.
         </p>
       </div>
 
@@ -78,6 +91,41 @@ export default async function NewSitePage({ params }: { params: { slug: string }
             className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
           />
         </label>
+
+        <div className="border-t border-line pt-4">
+          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">SEO / AEO</span>
+          <div className="mt-3 space-y-3">
+            <Field
+              label="Page title (optional - auto-generated if blank)"
+              name="seoTitle"
+              placeholder="Roof Repair in Alamo Heights, TX | Texas Roof Guardians"
+            />
+            <label className="block">
+              <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
+                Meta description (optional - auto-generated if blank)
+              </span>
+              <textarea
+                name="seoDescription"
+                rows={2}
+                placeholder="Free storm damage inspections in Alamo Heights. Licensed, insured, 24-hour response."
+                className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="block">
+              <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
+                FAQ (one per line: Question | Answer) - this is what AI answer engines and voice
+                assistants pull direct answers from
+              </span>
+              <textarea
+                name="faqItems"
+                rows={4}
+                placeholder={'Do you offer free estimates? | Yes, every inspection is free with no obligation.\nHow fast can you respond after a storm? | We typically respond within 24 hours.'}
+                className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm font-mono"
+              />
+            </label>
+          </div>
+        </div>
+
         <button className="rounded-sm bg-brass px-4 py-2 font-display text-sm tracking-wide text-base">
           Save draft
         </button>

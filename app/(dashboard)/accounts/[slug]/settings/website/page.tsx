@@ -15,10 +15,25 @@ export default async function WebsiteSettingsPage({ params }: { params: { slug: 
       .replace(/\/$/, '');
     const businessPhone = (formData.get('businessPhone') as string) || null;
     const brandColor = (formData.get('brandColor') as string) || null;
+    const streetAddress = (formData.get('streetAddress') as string) || null;
+    const seoCity = (formData.get('seoCity') as string) || null;
+    const seoState = (formData.get('seoState') as string) || null;
+    const seoZip = (formData.get('seoZip') as string) || null;
+    const serviceAreasRaw = (formData.get('serviceAreas') as string) || '';
+    const serviceAreas = serviceAreasRaw.split(',').map((s) => s.trim()).filter(Boolean);
 
     await db.subAccount.update({
       where: { id: subAccount.id },
-      data: { primaryDomain: primaryDomain || null, businessPhone, brandColor },
+      data: {
+        primaryDomain: primaryDomain || null,
+        businessPhone,
+        brandColor,
+        streetAddress,
+        seoCity,
+        seoState,
+        seoZip,
+        serviceAreas,
+      },
     });
     redirect(`/accounts/${params.slug}/settings/website`);
   }
@@ -54,6 +69,31 @@ export default async function WebsiteSettingsPage({ params }: { params: { slug: 
             className="mt-1 h-10 w-20 rounded-sm border border-line bg-base"
           />
         </label>
+
+        <div className="border-t border-line pt-4">
+          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
+            Local SEO / structured data
+          </span>
+          <p className="mt-1 text-xs text-muted">
+            Powers the LocalBusiness schema that Google, Bing, and AI answer engines read facts
+            from - fill in what you have, none of it is required.
+          </p>
+          <div className="mt-3 space-y-3">
+            <Field label="Street address" name="streetAddress" defaultValue={subAccount.streetAddress || ''} placeholder="123 Main St" />
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="City" name="seoCity" defaultValue={subAccount.seoCity || ''} />
+              <Field label="State" name="seoState" defaultValue={subAccount.seoState || ''} />
+              <Field label="Zip" name="seoZip" defaultValue={subAccount.seoZip || ''} />
+            </div>
+            <Field
+              label="Service areas (comma-separated)"
+              name="serviceAreas"
+              defaultValue={subAccount.serviceAreas.join(', ')}
+              placeholder="San Antonio, Alamo Heights, Boerne"
+            />
+          </div>
+        </div>
+
         <button className="rounded-sm bg-brass px-4 py-2 font-display text-sm tracking-wide text-base">
           Save
         </button>

@@ -1,10 +1,35 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { redirect, notFound } from 'next/navigation';
 import { headers } from 'next/headers';
+import type { Metadata } from 'next';
 import { db } from '@/lib/db';
 import { isOpsHost } from '@/lib/opsHost';
 import { resolvePublicSite } from '@/lib/publicSite';
 import { PublicSiteTemplate } from '@/components/PublicSiteTemplate';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const host = headers().get('host') || '';
+  if (isOpsHost(host)) return { title: 'BFE Ops' };
+
+  const resolved = await resolvePublicSite(host, []);
+  if (!resolved) return {};
+
+  const { subAccount, site } = resolved;
+  const content = site.contentJson as { heroHeadline?: string };
+  const title = site.seoTitle || `${subAccount.name}${subAccount.seoCity ? ` | ${subAccount.seoCity}` : ''}`;
+  const description =
+    site.seoDescription ||
+    content.heroHeadline ||
+    `${subAccount.name} - trusted local ${subAccount.industry || 'service'} provider${subAccount.seoCity ? ` in ${subAccount.seoCity}` : ''}.`;
+
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: 'website' },
+    twitter: { card: 'summary', title, description },
+    alternates: subAccount.primaryDomain ? { canonical: `https://${subAccount.primaryDomain}` } : undefined,
+  };
+}
 
 export default async function RootPage() {
   const host = headers().get('host') || '';
@@ -18,6 +43,7 @@ export default async function RootPage() {
         contentJson={resolved.site.contentJson as any}
         city={resolved.site.city}
         neighborhood={resolved.site.neighborhood}
+        faqItems={resolved.site.faqItems as any}
       />
     );
   }
