@@ -111,6 +111,7 @@ model User {
   createdContacts Contact[] @relation("ContactCreatedBy")
   ownedContacts   Contact[] @relation("ContactOwner")
   createdNotes    Note[] @relation("NoteCreatedBy")
+  notifications   Notification[]
 }
 
 // Agency-level role: sees across all sub-accounts (you, senior staff)
@@ -140,6 +141,19 @@ model UserSubAccountRole {
 enum SuppressionReason {
   HARD_BOUNCE
   SPAM_COMPLAINT
+}
+
+// Internal @mention notifications - e.g. tagging @brock in a note
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   // who should see this notification
+  user      User     @relation(fields: [userId], references: [id])
+  message   String
+  link      String   // where clicking it should take you
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 enum DomainStatus {

@@ -22,11 +22,13 @@ export function ContactsBulkTable({
   slug,
   bulkAddTag,
   bulkDeleteContacts,
+  canDelete,
 }: {
   contacts: Contact[];
   slug: string;
   bulkAddTag: (contactIds: string[], tag: string) => Promise<void>;
   bulkDeleteContacts: (contactIds: string[]) => Promise<void>;
+  canDelete: boolean;
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [tagInput, setTagInput] = useState('');
@@ -89,6 +91,7 @@ export function ContactsBulkTable({
             onClick={handleDelete}
             disabled={busy}
             className="ml-auto rounded-sm border border-flag px-3 py-1 font-mono text-[10px] uppercase tracking-wide2 text-flag disabled:opacity-40"
+            style={{ display: canDelete ? undefined : 'none' }}
           >
             Delete Selected
           </button>

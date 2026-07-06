@@ -2,6 +2,7 @@ import { UserButton } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getCurrentUserContext } from '@/lib/auth';
+import { db } from '@/lib/db';
 import { AccountSwitcher } from '@/components/AccountSwitcher';
 import { redirect } from 'next/navigation';
 
@@ -14,6 +15,8 @@ export default async function DashboardLayout({
 }) {
   const ctx = await getCurrentUserContext();
   if (!ctx) redirect('/sign-in');
+
+  const unreadCount = await db.notification.count({ where: { userId: ctx.user.id, read: false } });
 
   const current = params?.slug
     ? ctx.accessibleSubAccounts.find((a) => a.slug === params.slug) || null
@@ -34,6 +37,14 @@ export default async function DashboardLayout({
           />
         </div>
         <div className="flex items-center gap-4">
+          <Link href="/notifications" className="relative font-mono text-xs uppercase tracking-wide2 text-muted hover:text-brass">
+            🔔
+            {unreadCount > 0 && (
+              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-flag text-[9px] text-white">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </Link>
           {ctx.isAgencyLevel && (
             <Link
               href="/agency/team"

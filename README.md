@@ -280,6 +280,32 @@ payment processing, no customer self-scheduling):
 - No payment collection - that's directly between contractor and customer
 - No customer-facing self-scheduling - you schedule after acceptance
 
+## Sub-account management - closed both gaps
+- `/accounts/[slug]/settings/general` - edit name, industry (drives CRM
+  custom fields), logo URL after creation
+- Team page rebuilt to show every individual role assignment (not grouped
+  by person) with a "Remove" button per assignment - agency-wide access,
+  specific sub-account access, and pending invites can all be revoked.
+  The agency OWNER role itself can't be removed this way (by design)
+
+## CRM batch - all four addressed
+1. **Deal editing** - `/accounts/[slug]/deals/[dealId]/edit`, edit link on
+   every deal (contact page + pipeline board), includes delete
+2. **Pipeline stages, customizable per sub-account** - "Manage Stages" on
+   the pipeline page: add, rename, reorder (↑/↓), delete (blocked if deals
+   are still in that stage - move them first)
+3. **Notes**: anyone with access can add a note; only the Agency OWNER can
+   edit or delete an existing note (employees add a follow-up note instead
+   if something needs correcting - keeps the record honest).
+   **@mentions**: type `@brock` or `@brooke` (matches first name or their
+   custom sign-off name) in any note and that person gets a notification -
+   bell icon in the header with unread count, full list at `/notifications`
+4. **Permissions simplified**: anyone granted access to a sub-account can
+   do everything in it (contacts, notes, deals, campaigns) EXCEPT deleting
+   contacts and reassigning an already-owned contact - both stay Agency
+   OWNER-only. No separate read-only tier - access is all-or-nothing per
+   sub-account, which matches how you actually want to run this.
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

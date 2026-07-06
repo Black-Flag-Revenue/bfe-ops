@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { assertSubAccountAccess, getCurrentUserContext } from '@/lib/auth';
 import { getIndustryFields } from '@/lib/industryFields';
 import { sendContactReply } from '@/lib/resend';
+import { resolveMentions } from '@/lib/mentions';
 import { redirect } from 'next/navigation';
 
 export default async function ContactDetailPage({
@@ -63,8 +64,44 @@ export default async function ContactDetailPage({
     const userCtx = await assertSubAccountAccess(subAccount.id);
     const body = formData.get('body') as string;
     if (body?.trim()) {
-      await db.note.create({ data: { contactId: contact.id, body, createdById: userCtx.user.id } });
+      const note = await db.note.create({
+        data: { contactId: contact.id, body, createdById: userCtx.user.id },
+      });
+
+      const mentionedUserIds = await resolveMentions(body, subAccount.id);
+      for (const userId of mentionedUserIds) {
+        if (userId === userCtx.user.id) continue; // don't notify yourself
+        await db.notification.create({
+          data: {
+            userId,
+            message: `${userCtx.user.name} mentioned you on ${contact.firstName} ${contact.lastName}: "${body.slice(0, 80)}"`,
+            link: `/accounts/${params.slug}/contacts/${contact.id}`,
+          },
+        });
+      }
     }
+    redirect(`/accounts/${params.slug}/contacts/${contact.id}`);
+  }
+
+  async function editNote(formData: FormData) {
+    'use server';
+    const userCtx = await assertSubAccountAccess(subAccount.id);
+    if (!userCtx.user.agencyRoles.some((r) => r.role === 'OWNER')) {
+      throw new Error('Only the agency owner can edit notes');
+    }
+    const noteId = formData.get('noteId') as string;
+    const body = formData.get('body') as string;
+    await db.note.update({ where: { id: noteId }, data: { body } });
+    redirect(`/accounts/${params.slug}/contacts/${contact.id}`);
+  }
+
+  async function deleteNote(formData: FormData) {
+    'use server';
+    const userCtx = await assertSubAccountAccess(subAccount.id);
+    if (!userCtx.user.agencyRoles.some((r) => r.role === 'OWNER')) {
+      throw new Error('Only the agency owner can delete notes');
+    }
+    await db.note.delete({ where: { id: formData.get('noteId') as string } });
     redirect(`/accounts/${params.slug}/contacts/${contact.id}`);
   }
 
@@ -225,7 +262,15 @@ export default async function ContactDetailPage({
           <div className="mt-3 space-y-2">
             {contact.deals.map((deal) => (
               <div key={deal.id} className="rounded-sm border border-line p-2 text-sm">
-                <div>{deal.title}</div>
+                <div className="flex items-center justify-between">
+                  <span>{deal.title}</span>
+                  <a
+                    href={`/accounts/${params.slug}/deals/${deal.id}/edit`}
+                    className="font-mono text-[10px] uppercase tracking-wide2 text-muted hover:text-brass"
+                  >
+                    Edit
+                  </a>
+                </div>
                 <div className="mt-1 flex justify-between font-mono text-[10px] uppercase tracking-wide2 text-muted">
                   <span>{deal.stage.name}</span>
                   {deal.value && <span>${deal.value.toString()}</span>}
@@ -260,7 +305,7 @@ export default async function ContactDetailPage({
             <textarea
               name="body"
               rows={2}
-              placeholder="Add a note..."
+              placeholder="Add a note... use @brock or @brooke to tag someone"
               className="w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
             />
             <button className="rounded-sm border border-line px-3 py-1.5 text-xs hover:border-brass/60">
@@ -271,8 +316,28 @@ export default async function ContactDetailPage({
             {contact.notes.map((note) => (
               <div key={note.id} className="rounded-sm bg-base p-2 text-sm">
                 {note.body}
-                <div className="mt-1 font-mono text-[10px] text-muted">
-                  {note.createdBy?.name || 'Unknown'} — {note.createdAt.toLocaleDateString()}
+                <div className="mt-1 flex items-center justify-between font-mono text-[10px] text-muted">
+                  <span>{note.createdBy?.name || 'Unknown'} — {note.createdAt.toLocaleDateString()}</span>
+                  {isOwnerRole && (
+                    <div className="flex gap-2">
+                      <details className="inline">
+                        <summary className="cursor-pointer hover:text-brass">Edit</summary>
+                        <form action={editNote} className="mt-1 flex gap-1">
+                          <input type="hidden" name="noteId" value={note.id} />
+                          <input
+                            name="body"
+                            defaultValue={note.body}
+                            className="rounded-sm border border-line bg-panel px-2 py-1 text-xs text-ink"
+                          />
+                          <button className="rounded-sm border border-line px-2 text-[10px]">Save</button>
+                        </form>
+                      </details>
+                      <form action={deleteNote}>
+                        <input type="hidden" name="noteId" value={note.id} />
+                        <button className="hover:text-flag">Delete</button>
+                      </form>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

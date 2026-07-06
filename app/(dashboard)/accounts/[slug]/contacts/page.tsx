@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { assertSubAccountAccess } from '@/lib/auth';
+import { assertSubAccountAccess, getCurrentUserContext } from '@/lib/auth';
 import { ContactsBulkTable } from '@/components/ContactsBulkTable';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
@@ -19,7 +19,8 @@ export default async function ContactsPage({
   };
 }) {
   const subAccount = await db.subAccount.findUniqueOrThrow({ where: { slug: params.slug } });
-  await assertSubAccountAccess(subAccount.id);
+  const ctx = await assertSubAccountAccess(subAccount.id);
+  const isOwnerRole = ctx.user.agencyRoles.some((r) => r.role === 'OWNER');
 
   const q = searchParams.q?.trim();
   const tag = searchParams.tag?.trim();
@@ -78,7 +79,10 @@ export default async function ContactsPage({
 
   async function bulkDeleteContacts(contactIds: string[]) {
     'use server';
-    await assertSubAccountAccess(subAccount.id);
+    const userCtx = await assertSubAccountAccess(subAccount.id);
+    if (!userCtx.user.agencyRoles.some((r) => r.role === 'OWNER')) {
+      throw new Error('Only the agency owner can delete contacts');
+    }
     await db.contact.deleteMany({ where: { id: { in: contactIds }, subAccountId: subAccount.id } });
     revalidatePath(`/accounts/${params.slug}/contacts`);
   }
@@ -160,6 +164,7 @@ export default async function ContactsPage({
         slug={params.slug}
         bulkAddTag={bulkAddTag}
         bulkDeleteContacts={bulkDeleteContacts}
+        canDelete={isOwnerRole}
       />
     </div>
   );
