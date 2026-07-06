@@ -146,6 +146,8 @@ enum SubAccountRole {
 model PendingAgencyInvite {
   id        String   @id @default(cuid())
   email     String
+  name      String?
+  avatarUrl String?
   agencyId  String
   agency    Agency   @relation(fields: [agencyId], references: [id])
   role      AgencyRole @default(ADMIN)
@@ -157,6 +159,8 @@ model PendingAgencyInvite {
 model PendingSubAccountInvite {
   id           String   @id @default(cuid())
   email        String
+  name         String?
+  avatarUrl    String?
   subAccountId String
   subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
   role         SubAccountRole @default(MEMBER)

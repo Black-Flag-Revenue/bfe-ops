@@ -49,12 +49,20 @@ export default async function ContactsPage({
           <h1 className="font-display text-3xl tracking-wide">Contacts — {subAccount.name}</h1>
           <p className="mt-1 text-sm text-muted">{contacts.length} shown</p>
         </div>
-        <Link
-          href={`/accounts/${params.slug}/contacts/new`}
-          className="rounded-sm bg-brass px-4 py-2 font-display text-sm tracking-wide text-base"
-        >
-          New Contact
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href={`/accounts/${params.slug}/contacts/import`}
+            className="rounded-sm border border-line px-4 py-2 font-display text-sm tracking-wide hover:border-brass/60"
+          >
+            Import CSV
+          </Link>
+          <Link
+            href={`/accounts/${params.slug}/contacts/new`}
+            className="rounded-sm bg-brass px-4 py-2 font-display text-sm tracking-wide text-base"
+          >
+            New Contact
+          </Link>
+        </div>
       </div>
 
       <form className="flex flex-wrap items-center gap-2">

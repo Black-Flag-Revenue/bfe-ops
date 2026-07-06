@@ -131,6 +131,18 @@ Clerk for the first time - no coordination needed on timing.
   visit. Move deals between stages via dropdown (no drag-and-drop yet)
 - Deals are created from a contact's page, not the pipeline board directly
 
+## Employee invites - now with name/photo
+Team invite form asks for name + photo URL before sending - applied
+automatically the moment they sign up, so you're not stuck with whatever
+name/photo their Google/Clerk account happens to have.
+
+## Bulk contact import
+`/accounts/[slug]/contacts/import` - upload a CSV. Header row required,
+recognized columns: firstName (only one that's required), lastName, email,
+phone, address, city, state, zip, source, tags (comma or semicolon
+separated within the cell). Skips rows with no firstName, and skips
+duplicate emails within that sub-account.
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

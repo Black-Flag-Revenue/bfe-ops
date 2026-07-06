@@ -14,10 +14,18 @@ export default async function RootPage() {
     const existingAgency = await db.agency.findFirst();
     const clerkUser = await currentUser();
     const email = clerkUser?.emailAddresses?.[0]?.emailAddress ?? '';
-    const name = clerkUser?.fullName || email || 'Unnamed';
+
+    // If they were invited with a name/photo already set, use that instead
+    // of whatever Clerk has - lets you set these up before they even sign in.
+    const matchingInvite =
+      (await db.pendingAgencyInvite.findFirst({ where: { email } })) ||
+      (await db.pendingSubAccountInvite.findFirst({ where: { email } }));
+
+    const name = matchingInvite?.name || clerkUser?.fullName || email || 'Unnamed';
+    const avatarUrl = matchingInvite?.avatarUrl || clerkUser?.imageUrl || null;
 
     user = await db.user.create({
-      data: { clerkId, email, name },
+      data: { clerkId, email, name, avatarUrl },
     });
 
     if (!existingAgency) {

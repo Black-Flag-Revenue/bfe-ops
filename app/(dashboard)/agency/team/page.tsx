@@ -27,21 +27,23 @@ export default async function TeamPage() {
   async function inviteTeamMember(formData: FormData) {
     'use server';
     const email = (formData.get('email') as string).toLowerCase().trim();
+    const name = (formData.get('name') as string) || null;
+    const avatarUrl = (formData.get('avatarUrl') as string) || null;
     const accessType = formData.get('accessType') as string;
 
     if (accessType === 'all') {
       await db.pendingAgencyInvite.upsert({
         where: { email_agencyId: { email, agencyId } },
-        create: { email, agencyId, role: 'ADMIN' },
-        update: {},
+        create: { email, name, avatarUrl, agencyId, role: 'ADMIN' },
+        update: { name, avatarUrl },
       });
     } else {
       const subAccountIds = formData.getAll('subAccountIds') as string[];
       for (const subAccountId of subAccountIds) {
         await db.pendingSubAccountInvite.upsert({
           where: { email_subAccountId: { email, subAccountId } },
-          create: { email, subAccountId, role: 'MEMBER' },
-          update: {},
+          create: { email, name, avatarUrl, subAccountId, role: 'MEMBER' },
+          update: { name, avatarUrl },
         });
       }
     }
@@ -62,6 +64,27 @@ export default async function TeamPage() {
       <section className="rounded-sm border border-line bg-panel p-5">
         <h2 className="font-display text-lg tracking-wide">Invite someone</h2>
         <form action={inviteTeamMember} className="mt-4 space-y-4">
+          <label className="block">
+            <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">Name</span>
+            <input
+              name="name"
+              required
+              placeholder="Brooke Anderson"
+              className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="block">
+            <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
+              Photo URL (optional)
+            </span>
+            <input
+              name="avatarUrl"
+              placeholder="https://..."
+              className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
+            />
+          </label>
+
           <label className="block">
             <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">Email</span>
             <input
@@ -142,13 +165,31 @@ export default async function TeamPage() {
           <div className="mt-3 divide-y divide-line">
             {pendingAgency.map((inv) => (
               <div key={inv.id} className="flex items-center justify-between py-2 text-sm">
-                <span>{inv.email}</span>
+                <span className="flex items-center gap-2">
+                  {inv.avatarUrl ? (
+                    <img src={inv.avatarUrl} alt={inv.name || inv.email} className="h-6 w-6 rounded-full object-cover border border-line" />
+                  ) : (
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-line bg-base font-mono text-[10px] text-muted">
+                      {(inv.name || inv.email).charAt(0)}
+                    </span>
+                  )}
+                  {inv.name || inv.email}
+                </span>
                 <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">All accounts</span>
               </div>
             ))}
             {pendingSubAccount.map((inv) => (
               <div key={inv.id} className="flex items-center justify-between py-2 text-sm">
-                <span>{inv.email}</span>
+                <span className="flex items-center gap-2">
+                  {inv.avatarUrl ? (
+                    <img src={inv.avatarUrl} alt={inv.name || inv.email} className="h-6 w-6 rounded-full object-cover border border-line" />
+                  ) : (
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-line bg-base font-mono text-[10px] text-muted">
+                      {(inv.name || inv.email).charAt(0)}
+                    </span>
+                  )}
+                  {inv.name || inv.email}
+                </span>
                 <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
                   {inv.subAccount.name}
                 </span>
