@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::selection {
+  background-color: #B8933F;
+  color: #0B0D0C;
+}
+
+* {
+  scrollbar-color: #262B28 #0B0D0C;
+}

@@ -1,0 +1,349 @@
+// BFE Ops - Core Database Schema
+// Multi-tenant structure: Agency (BFE) -> SubAccounts (clients) -> scoped data
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// AGENCY / SUB-ACCOUNT STRUCTURE
+// ─────────────────────────────────────────────
+
+model Agency {
+  id         String       @id @default(cuid())
+  name       String       // "Black Flag Edge"
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  subAccounts SubAccount[]
+  users       UserAgencyRole[]
+}
+
+model SubAccount {
+  id         String   @id @default(cuid())
+  agencyId   String
+  agency     Agency   @relation(fields: [agencyId], references: [id])
+
+  name       String   // "Scottish Tom Heating & Air"
+  slug       String   @unique // "scottish-tom" - used in URLs/subdomains
+  industry   String?  // "HVAC", "Roofing", "Detailing"
+  brandColor String?  // hex, for quick visual distinction in the switcher
+  logoUrl    String?
+  timezone   String   @default("America/New_York")
+  active     Boolean  @default(true)
+
+  // Branded sending email (Resend) - separate from any real hosted inbox
+  // TRANSACTIONAL domain: invoices, reply threads, anything tied to an existing
+  // customer relationship. Keep this domain's reputation clean.
+  sendingDomain  String?      // "mg.mobilebuff.com"
+  resendDomainId String?
+  domainStatus   DomainStatus @default(NOT_CONFIGURED)
+  fromName       String?      // "Mobile Buff"
+  fromEmail      String?      // "hello@mg.mobilebuff.com"
+  replyToEmail   String?
+  dnsRecords     Json?
+
+  // COLD OUTREACH domain: isolated on purpose. If this one takes a reputation
+  // hit from cold-send complaints/bounces, it never touches the transactional
+  // domain above, so invoices and customer replies keep landing fine.
+  coldSendingDomain  String?
+  coldResendDomainId String?
+  coldDomainStatus   DomainStatus @default(NOT_CONFIGURED)
+  coldFromName       String?
+  coldFromEmail      String?      // "hello@updates.mobilebuff.com" - name doesn't need to signal "cold" to recipients
+  coldDnsRecords     Json?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  users      UserSubAccountRole[]
+  contacts   Contact[]
+  deals      Deal[]
+  pipelines  Pipeline[]
+  invoices   Invoice[]
+  sites      Site[]
+  emailCampaigns EmailCampaign[]
+}
+
+// ─────────────────────────────────────────────
+// USERS & PERMISSIONS
+// ─────────────────────────────────────────────
+
+model User {
+  id         String   @id @default(cuid())
+  clerkId    String   @unique // maps to Clerk auth user
+  email      String   @unique
+  name       String
+  avatarUrl  String?
+  signOffName  String?  // how they sign emails, e.g. "Brooke" (defaults to `name` if unset)
+  signOffTitle String?  // optional, e.g. "Sales" - shown under their name
+  createdAt  DateTime @default(now())
+
+  agencyRoles     UserAgencyRole[]
+  subAccountRoles UserSubAccountRole[]
+  assignedDeals   Deal[] @relation("DealOwner")
+  sentMessages    Message[]
+}
+
+// Agency-level role: sees across all sub-accounts (you, senior staff)
+model UserAgencyRole {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  agencyId  String
+  agency    Agency   @relation(fields: [agencyId], references: [id])
+  role      AgencyRole @default(ADMIN)
+
+  @@unique([userId, agencyId])
+}
+
+// Sub-account-level role: scoped to one client only (most employees)
+model UserSubAccountRole {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  subAccountId String
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  role         SubAccountRole @default(MEMBER)
+
+  @@unique([userId, subAccountId])
+}
+
+enum SuppressionReason {
+  HARD_BOUNCE
+  SPAM_COMPLAINT
+}
+
+enum DomainStatus {
+  NOT_CONFIGURED
+  PENDING     // domain added to Resend, waiting on DNS propagation/verification
+  VERIFIED    // ready to send
+  FAILED
+}
+
+enum AgencyRole {
+  OWNER   // Brock
+  ADMIN   // full access, can't delete agency
+}
+
+enum SubAccountRole {
+  MANAGER // full control of this client's data
+  MEMBER  // day-to-day: CRM, invoices, no settings/user management
+  VIEWER  // read-only, e.g. reporting
+}
+
+// ─────────────────────────────────────────────
+// CRM: CONTACTS, PIPELINE, DEALS
+// ─────────────────────────────────────────────
+
+model Contact {
+  id           String   @id @default(cuid())
+  subAccountId String
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+
+  firstName    String
+  lastName     String?
+  email        String?
+  phone        String?
+  address      String?
+  city         String?
+  state        String?
+  zip          String?
+
+  source       String?  // "cold outreach", "door knock", "referral", "letter campaign"
+  tags         String[] @default([])
+  unsubscribed Boolean  @default(false)   // clicked the unsubscribe link
+  suppressed   Boolean  @default(false)   // hard bounce or spam complaint - auto-set, never email again
+  suppressionReason SuppressionReason?
+  notes        Note[]
+  messages     Message[]
+  deals        Deal[]
+  invoices     Invoice[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([subAccountId])
+}
+
+model Note {
+  id         String   @id @default(cuid())
+  contactId  String
+  contact    Contact  @relation(fields: [contactId], references: [id])
+  body       String
+  createdAt  DateTime @default(now())
+}
+
+// Shared team inbox - inbound replies + outbound follow-ups, threaded per contact.
+// Anyone working the sub-account sees the same thread, not a personal mailbox.
+model Message {
+  id          String   @id @default(cuid())
+  contactId   String
+  contact     Contact  @relation(fields: [contactId], references: [id])
+
+  direction   MessageDirection
+  subject     String?
+  bodyText    String?
+  bodyHtml    String?
+  fromAddress String
+  toAddress   String
+
+  sentById    String?  // User who sent it, null for inbound
+  sentBy      User?    @relation(fields: [sentById], references: [id])
+
+  resendMessageId String? // for outbound: ties back to Resend's send id
+  createdAt   DateTime @default(now())
+
+  @@index([contactId])
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+model Pipeline {
+  id           String   @id @default(cuid())
+  subAccountId String
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  name         String   // "Roofing Sales Pipeline"
+  stages       Stage[]
+  deals        Deal[]
+}
+
+model Stage {
+  id          String   @id @default(cuid())
+  pipelineId  String
+  pipeline    Pipeline @relation(fields: [pipelineId], references: [id])
+  name        String   // "New Lead", "Quoted", "Won", "Lost"
+  order       Int
+  deals       Deal[]
+}
+
+model Deal {
+  id           String   @id @default(cuid())
+  subAccountId String
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  contactId    String
+  contact      Contact  @relation(fields: [contactId], references: [id])
+  pipelineId   String
+  pipeline     Pipeline @relation(fields: [pipelineId], references: [id])
+  stageId      String
+  stage        Stage    @relation(fields: [stageId], references: [id])
+
+  title        String
+  value        Decimal? @db.Decimal(10, 2)
+  ownerId      String?
+  owner        User?    @relation("DealOwner", fields: [ownerId], references: [id])
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([subAccountId])
+}
+
+// ─────────────────────────────────────────────
+// INVOICING / ESTIMATES
+// ─────────────────────────────────────────────
+
+model Invoice {
+  id           String   @id @default(cuid())
+  subAccountId String
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  contactId    String?
+  contact      Contact? @relation(fields: [contactId], references: [id])
+
+  number       String   // human-facing invoice/estimate number
+  type         InvoiceType @default(ESTIMATE)
+  status       InvoiceStatus @default(DRAFT)
+
+  lineItems    Json     // [{ description, qty, unitPrice, optionGroup }]
+  subtotal     Decimal  @db.Decimal(10, 2)
+  tax          Decimal  @db.Decimal(10, 2) @default(0)
+  total        Decimal  @db.Decimal(10, 2)
+
+  templateId   String?  // which PDF template/layout to render with
+  pdfUrl       String?  // last generated PDF, stored in blob storage
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([subAccountId])
+}
+
+enum InvoiceType {
+  ESTIMATE
+  INVOICE
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  APPROVED
+  PAID
+  VOID
+}
+
+// ─────────────────────────────────────────────
+// SITE GENERATOR / DEPLOYS
+// ─────────────────────────────────────────────
+
+model Site {
+  id           String   @id @default(cuid())
+  subAccountId String
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+
+  name         String   // "Mobile Buff - Hershey PA"
+  city         String?
+  neighborhood String?
+  domain       String?  // custom domain if set
+  deployUrl    String?  // live URL (vercel/netlify)
+  templateId   String   // which base template this was generated from
+  contentJson  Json     // form-filled + auto-pulled data used to generate the page
+  status       SiteStatus @default(DRAFT)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([subAccountId])
+}
+
+enum SiteStatus {
+  DRAFT
+  DEPLOYED
+  ARCHIVED
+}
+
+// ─────────────────────────────────────────────
+// MASS EMAIL
+// ─────────────────────────────────────────────
+
+model EmailCampaign {
+  id           String   @id @default(cuid())
+  subAccountId String
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+
+  name         String
+  subject      String
+  bodyHtml     String
+  status       CampaignStatus @default(DRAFT)
+  sentAt       DateTime?
+  recipientTags String[] @default([]) // send to contacts matching these tags
+
+  recipientCount Int @default(0)
+  sentCount      Int @default(0)
+  failedCount    Int @default(0)
+
+  createdAt    DateTime @default(now())
+}
+
+enum CampaignStatus {
+  DRAFT
+  SENDING
+  SENT
+}
