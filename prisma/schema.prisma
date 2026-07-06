@@ -188,6 +188,11 @@ model Contact {
   unsubscribed Boolean  @default(false)   // clicked the unsubscribe link
   suppressed   Boolean  @default(false)   // hard bounce or spam complaint - auto-set, never email again
   suppressionReason SuppressionReason?
+  // Industry-specific data that doesn't fit every business: vehicle info for
+  // detailing/mobile mechanic (make, model, year, plate), roof/property info
+  // for roofing/HVAC (roof type, sqft, last serviced), etc. Free-form on
+  // purpose since BFE spans several different industries.
+  customFields Json?
   notes        Note[]
   messages     Message[]
   deals        Deal[]

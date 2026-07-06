@@ -15,6 +15,18 @@ export default async function SubAccountHome({ params }: { params: { slug: strin
 
       <div className="flex gap-3">
         <Link
+          href={`/accounts/${params.slug}/contacts`}
+          className="rounded-sm border border-line bg-panel px-4 py-2 text-sm hover:border-brass/60"
+        >
+          Contacts
+        </Link>
+        <Link
+          href={`/accounts/${params.slug}/pipeline`}
+          className="rounded-sm border border-line bg-panel px-4 py-2 text-sm hover:border-brass/60"
+        >
+          Pipeline
+        </Link>
+        <Link
           href={`/accounts/${params.slug}/sites`}
           className="rounded-sm border border-line bg-panel px-4 py-2 text-sm hover:border-brass/60"
         >
@@ -35,7 +47,7 @@ export default async function SubAccountHome({ params }: { params: { slug: strin
       </div>
 
       <p className="text-xs text-muted">
-        CRM, invoicing, and the rest of this account's dashboard land here next session.
+        Invoicing/estimates land here next session.
       </p>
     </div>
   );

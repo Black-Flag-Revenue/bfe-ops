@@ -110,10 +110,26 @@ Invites work before someone signs up: stored as a "pending invite" and
 automatically converted to real access the moment that email signs in via
 Clerk for the first time - no coordination needed on timing.
 
-## CRM status
-**Not started yet.** Schema exists (Contact, Deal, Pipeline, Stage all in
-`schema.prisma`) but there's no UI to view/add contacts or a pipeline board.
-This is the next thing to build.
+## Branding & employee photos
+- Logo lives at `public/logo.png`, shown in the header with a light backing
+  chip (the logo's black text would disappear on our dark header otherwise)
+- `/agency/profile` - set your own photo (paste a URL for now - real
+  drag-and-drop upload via Supabase Storage is the next step), sign-off
+  name/title used automatically on outbound emails
+
+## CRM - now built
+- `/accounts/[slug]/contacts` - searchable list, filter by tag
+- `/accounts/[slug]/contacts/new` - create a contact; fields adapt to the
+  sub-account's industry (see `lib/industryFields.ts` - roofing gets roof
+  type/age, detailing gets vehicle make/model, etc.). Add more industries
+  there as needed.
+- `/accounts/[slug]/contacts/[contactId]` - full detail: info, industry
+  fields, notes, deals, and the shared conversation thread (reply sends
+  through `sendContactReply`, same as before)
+- `/accounts/[slug]/pipeline` - simple board, auto-creates a default
+  5-stage pipeline (New Lead → Contacted → Quoted → Won → Lost) on first
+  visit. Move deals between stages via dropdown (no drag-and-drop yet)
+- Deals are created from a contact's page, not the pipeline board directly
 
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow

@@ -108,9 +108,22 @@ export default async function TeamPage() {
         <div className="mt-3 divide-y divide-line">
           {teamMembers.map((member) => (
             <div key={member.id} className="flex items-center justify-between py-2">
-              <div>
-                <div className="text-sm">{member.name}</div>
-                <div className="text-xs text-muted">{member.email}</div>
+              <div className="flex items-center gap-3">
+                {member.avatarUrl ? (
+                  <img
+                    src={member.avatarUrl}
+                    alt={member.name}
+                    className="h-8 w-8 rounded-full object-cover border border-line"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-base font-mono text-xs text-muted">
+                    {member.name.charAt(0)}
+                  </div>
+                )}
+                <div>
+                  <div className="text-sm">{member.name}</div>
+                  <div className="text-xs text-muted">{member.email}</div>
+                </div>
               </div>
               <div className="text-right font-mono text-[10px] uppercase tracking-wide2 text-muted">
                 {member.agencyRoles.length > 0
