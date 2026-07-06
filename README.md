@@ -247,6 +247,36 @@ while editing other details.
 ## Contacts search
 Now searches name, address, email, and phone (not just city).
 
+## Estimates / Invoices - interactive pages, not PDFs
+The core deliverable: instead of a static PDF, the customer gets a link to a
+real page they interact with, and you get real signal back.
+
+**Creating one** (`/accounts/[slug]/invoices/new`):
+- Line items support an optional "option group" - label multiple items
+  "Good"/"Better"/"Best" (or whatever names you want) and the customer sees
+  them as selectable tiers, not a flat list
+- Add supporting links (photos, warranty docs) and videos (YouTube/Vimeo
+  auto-embed) - all shown right on the page
+
+**The customer's page** (`/estimate/[publicToken]` - public, no login):
+- Sees the option tiers, videos, links
+- Picks ONE option group and hits Approve
+- Once accepted, the page shows a simple confirmation instead of the form
+- Every view is tracked: `viewCount`, `firstViewedAt`, `lastViewedAt`,
+  status auto-advances DRAFT/SENT → VIEWED the first time it's opened
+
+**What happens after acceptance** (matches how you actually work - no
+payment processing, no customer self-scheduling):
+- You see the acceptance + chosen option on the invoice's internal detail
+  page (`/accounts/[slug]/invoices/[invoiceId]`)
+- Download a clean PDF summary of exactly what was accepted (built with
+  `@react-pdf/renderer`) to hand off to the contractor
+- Set a `scheduledDate` yourself once you've coordinated with them
+
+**Not built / explicitly out of scope per your call:**
+- No payment collection - that's directly between contractor and customer
+- No customer-facing self-scheduling - you schedule after acceptance
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

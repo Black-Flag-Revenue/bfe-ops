@@ -330,13 +330,29 @@ model Invoice {
   type         InvoiceType @default(ESTIMATE)
   status       InvoiceStatus @default(DRAFT)
 
-  lineItems    Json     // [{ description, qty, unitPrice, optionGroup }]
+  publicToken  String   @unique @default(cuid()) // unguessable - this IS the link you send the customer
+  lineItems    Json     // [{ description, qty, unitPrice, optionGroup }] - optionGroup lets you
+                         // offer Good/Better/Best style tiers; customer picks ONE group to accept
+  links        Json?    // [{ label, url }] - supporting docs, photos, whatever
+  videos       Json?    // [{ label, url }] - YouTube/Vimeo links, embedded on the page
   subtotal     Decimal  @db.Decimal(10, 2)
   tax          Decimal  @db.Decimal(10, 2) @default(0)
   total        Decimal  @db.Decimal(10, 2)
 
-  templateId   String?  // which PDF template/layout to render with
-  pdfUrl       String?  // last generated PDF, stored in blob storage
+  // Engagement tracking - what actually matters here: did they open it, when
+  viewCount      Int      @default(0)
+  firstViewedAt  DateTime?
+  lastViewedAt   DateTime?
+
+  // Acceptance - customer picks an option group and approves right on the page
+  acceptedAt          DateTime?
+  acceptedOptionGroup String?
+
+  // Scheduling happens on your end after acceptance, not self-service by the customer
+  scheduledDate DateTime?
+
+  templateId   String?  // reserved for future multiple visual templates
+  pdfUrl       String?  // cached last-generated PDF, if we start storing these
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -352,8 +368,9 @@ enum InvoiceType {
 enum InvoiceStatus {
   DRAFT
   SENT
-  APPROVED
-  PAID
+  VIEWED
+  ACCEPTED
+  SCHEDULED
   VOID
 }
 

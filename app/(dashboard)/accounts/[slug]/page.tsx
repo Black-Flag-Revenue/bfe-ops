@@ -33,6 +33,12 @@ export default async function SubAccountHome({ params }: { params: { slug: strin
           Pipeline
         </Link>
         <Link
+          href={`/accounts/${params.slug}/invoices`}
+          className="rounded-sm border border-line bg-panel px-4 py-2 text-sm hover:border-brass/60"
+        >
+          Estimates/Invoices
+        </Link>
+        <Link
           href={`/accounts/${params.slug}/sites`}
           className="rounded-sm border border-line bg-panel px-4 py-2 text-sm hover:border-brass/60"
         >
