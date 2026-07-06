@@ -1,24 +1,45 @@
 import { db } from '@/lib/db';
 import { assertSubAccountAccess } from '@/lib/auth';
+import { ContactsBulkTable } from '@/components/ContactsBulkTable';
 import Link from 'next/link';
+import { revalidatePath } from 'next/cache';
 
 export default async function ContactsPage({
   params,
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { q?: string; tag?: string };
+  searchParams: {
+    q?: string;
+    tag?: string;
+    createdFrom?: string;
+    createdTo?: string;
+    neverCampaigned?: string;
+    stageId?: string;
+  };
 }) {
   const subAccount = await db.subAccount.findUniqueOrThrow({ where: { slug: params.slug } });
   await assertSubAccountAccess(subAccount.id);
 
   const q = searchParams.q?.trim();
   const tag = searchParams.tag?.trim();
+  const neverCampaigned = searchParams.neverCampaigned === '1';
+  const stageId = searchParams.stageId?.trim();
 
   const contacts = await db.contact.findMany({
     where: {
       subAccountId: subAccount.id,
       ...(tag ? { tags: { has: tag } } : {}),
+      ...(searchParams.createdFrom || searchParams.createdTo
+        ? {
+            createdAt: {
+              ...(searchParams.createdFrom ? { gte: new Date(searchParams.createdFrom) } : {}),
+              ...(searchParams.createdTo ? { lte: new Date(searchParams.createdTo + 'T23:59:59') } : {}),
+            },
+          }
+        : {}),
+      ...(neverCampaigned ? { campaignRecipients: { none: {} } } : {}),
+      ...(stageId ? { deals: { some: { stageId } } } : {}),
       ...(q
         ? {
             OR: [
@@ -37,12 +58,30 @@ export default async function ContactsPage({
     include: { owner: true },
   });
 
-  // Pull distinct tags across the sub-account for the filter row
-  const allContacts = await db.contact.findMany({
-    where: { subAccountId: subAccount.id },
-    select: { tags: true },
-  });
-  const distinctTags = Array.from(new Set(allContacts.flatMap((c) => c.tags))).sort();
+  const [allContactsForTags, stages] = await Promise.all([
+    db.contact.findMany({ where: { subAccountId: subAccount.id }, select: { tags: true } }),
+    db.stage.findMany({ where: { pipeline: { subAccountId: subAccount.id } }, orderBy: { order: 'asc' } }),
+  ]);
+  const distinctTags = Array.from(new Set(allContactsForTags.flatMap((c) => c.tags))).sort();
+
+  async function bulkAddTag(contactIds: string[], newTag: string) {
+    'use server';
+    await assertSubAccountAccess(subAccount.id);
+    const targets = await db.contact.findMany({ where: { id: { in: contactIds } }, select: { id: true, tags: true } });
+    for (const t of targets) {
+      if (!t.tags.includes(newTag)) {
+        await db.contact.update({ where: { id: t.id }, data: { tags: [...t.tags, newTag] } });
+      }
+    }
+    revalidatePath(`/accounts/${params.slug}/contacts`);
+  }
+
+  async function bulkDeleteContacts(contactIds: string[]) {
+    'use server';
+    await assertSubAccountAccess(subAccount.id);
+    await db.contact.deleteMany({ where: { id: { in: contactIds }, subAccountId: subAccount.id } });
+    revalidatePath(`/accounts/${params.slug}/contacts`);
+  }
 
   return (
     <div className="space-y-6">
@@ -67,18 +106,40 @@ export default async function ContactsPage({
         </div>
       </div>
 
-      <form className="flex flex-wrap items-center gap-2">
-        <input
-          name="q"
-          defaultValue={q}
-          placeholder="Search name, address, email, or phone..."
-          className="w-72 rounded-sm border border-line bg-panel px-3 py-2 text-sm"
-        />
-        <button className="rounded-sm border border-line px-3 py-2 text-sm hover:border-brass/60">
-          Search
-        </button>
+      <form className="space-y-3 rounded-sm border border-line bg-panel p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            name="q"
+            defaultValue={q}
+            placeholder="Search name, address, email, or phone..."
+            className="w-72 rounded-sm border border-line bg-base px-3 py-2 text-sm"
+          />
+          <div className="flex items-center gap-1.5 text-xs text-muted">
+            <span className="font-mono uppercase tracking-wide2">Added</span>
+            <input type="date" name="createdFrom" defaultValue={searchParams.createdFrom} className="rounded-sm border border-line bg-base px-2 py-1.5 text-sm" />
+            <span>to</span>
+            <input type="date" name="createdTo" defaultValue={searchParams.createdTo} className="rounded-sm border border-line bg-base px-2 py-1.5 text-sm" />
+          </div>
+          <select name="stageId" defaultValue={stageId || ''} className="rounded-sm border border-line bg-base px-2 py-1.5 text-sm">
+            <option value="">Any pipeline stage</option>
+            {stages.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+          <label className="flex items-center gap-1.5 text-xs">
+            <input type="checkbox" name="neverCampaigned" value="1" defaultChecked={neverCampaigned} />
+            Never sent a campaign
+          </label>
+          <button className="rounded-sm border border-line px-3 py-2 text-sm hover:border-brass/60">
+            Apply Filters
+          </button>
+          <Link href={`/accounts/${params.slug}/contacts`} className="text-xs text-muted hover:text-flag">
+            Clear all
+          </Link>
+        </div>
+
         {distinctTags.length > 0 && (
-          <div className="ml-2 flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
             {distinctTags.map((t) => (
               <Link
                 key={t}
@@ -90,76 +151,16 @@ export default async function ContactsPage({
                 {t}
               </Link>
             ))}
-            {tag && (
-              <Link
-                href={`/accounts/${params.slug}/contacts`}
-                className="rounded-full border border-line px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide2 text-muted hover:border-flag hover:text-flag"
-              >
-                Clear
-              </Link>
-            )}
           </div>
         )}
       </form>
 
-      <div className="overflow-x-auto rounded-sm border border-line">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-panel text-left font-mono text-[10px] uppercase tracking-wide2 text-muted">
-              <th className="p-3">Name</th>
-              <th className="p-3">Contact</th>
-              <th className="p-3">Location</th>
-              <th className="p-3">Tags</th>
-              <th className="p-3">Owner</th>
-              <th className="p-3">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {contacts.map((c) => (
-              <tr key={c.id} className="border-b border-line last:border-0 hover:bg-panel/50">
-                <td className="p-3">
-                  <Link href={`/accounts/${params.slug}/contacts/${c.id}`} className="hover:text-brass">
-                    {c.firstName} {c.lastName}
-                  </Link>
-                </td>
-                <td className="p-3 text-muted">
-                  <div>{c.email}</div>
-                  <div className="font-mono text-xs">{c.phone}</div>
-                </td>
-                <td className="p-3 text-muted">{c.city}{c.state ? `, ${c.state}` : ''}</td>
-                <td className="p-3">
-                  <div className="flex flex-wrap gap-1">
-                    {c.tags.map((t) => (
-                      <span key={t} className="rounded-full border border-line px-2 py-0.5 font-mono text-[10px] text-muted">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </td>
-                <td className="p-3 text-muted">
-                  {c.owner ? c.owner.name : <span className="text-flag">Unassigned</span>}
-                </td>
-                <td className="p-3">
-                  {c.suppressed ? (
-                    <span className="font-mono text-[10px] uppercase tracking-wide2 text-flag">Suppressed</span>
-                  ) : c.unsubscribed ? (
-                    <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">Unsubscribed</span>
-                  ) : (
-                    <span className="font-mono text-[10px] uppercase tracking-wide2 text-ink">Active</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {contacts.length === 0 && (
-              <tr>
-                <td colSpan={6} className="p-6 text-center text-sm text-muted">
-                  No contacts yet.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ContactsBulkTable
+        contacts={contacts}
+        slug={params.slug}
+        bulkAddTag={bulkAddTag}
+        bulkDeleteContacts={bulkDeleteContacts}
+      />
     </div>
   );
 }

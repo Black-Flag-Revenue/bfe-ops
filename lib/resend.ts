@@ -192,6 +192,10 @@ export async function sendCampaign(campaignId: string) {
     try {
       await resend.batch.send(emails);
       sent += batch.length;
+      await db.campaignRecipient.createMany({
+        data: batch.map((c) => ({ campaignId, contactId: c.id })),
+        skipDuplicates: true,
+      });
     } catch (err) {
       failed += batch.length;
       console.error(`Campaign ${campaignId} batch failed at offset ${i}:`, err);

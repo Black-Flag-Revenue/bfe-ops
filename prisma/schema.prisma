@@ -227,6 +227,7 @@ model Contact {
   owner        User?    @relation("ContactOwner", fields: [ownerId], references: [id])
   notes        Note[]
   messages     Message[]
+  campaignRecipients CampaignRecipient[]
   deals        Deal[]
   invoices     Invoice[]
 
@@ -412,8 +413,23 @@ model EmailCampaign {
   recipientCount Int @default(0)
   sentCount      Int @default(0)
   failedCount    Int @default(0)
+  recipients     CampaignRecipient[]
 
   createdAt    DateTime @default(now())
+}
+
+// Records exactly which contacts got which campaign - powers "never been
+// sent a campaign" style segmentation and future per-contact send history.
+model CampaignRecipient {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   EmailCampaign @relation(fields: [campaignId], references: [id])
+  contactId  String
+  contact    Contact  @relation(fields: [contactId], references: [id])
+  sentAt     DateTime @default(now())
+
+  @@unique([campaignId, contactId])
+  @@index([contactId])
 }
 
 enum CampaignStatus {

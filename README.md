@@ -211,7 +211,21 @@ form yet (deals are created from a contact's page with no owner picker).
 
 ## CRM gaps still open (noted, not blocking)
 - No deal editing (title/value) after creation, no delete
-- No bulk contact actions (bulk tag, bulk delete, CSV export)
+- Pipeline stages are fixed at creation (New Lead → Contacted → Quoted →
+  Won → Lost) - no UI to rename/add/reorder stages per sub-account yet
+- No deal detail view - just what shows on the contact page and board
+
+## Bulk contact actions / cold email segmentation
+Contacts list now has real filters, feeding into the existing tag-based
+campaign system rather than duplicating it:
+- **Added date range**: filter by when the contact was created/imported
+- **Pipeline stage**: contacts with a deal currently sitting in a given stage
+- **Never sent a campaign**: contacts with zero entries in the new
+  `CampaignRecipient` table (added specifically for this - previously we
+  only stored aggregate send counts, not which contacts got what)
+- **Checkbox selection** + **bulk tag** + **bulk delete** on filtered
+  results. Workflow: filter to a segment → select → apply a new tag like
+  `cold-batch-july` → New Campaign → target that tag.
 
 ## Contact ownership rules
 - Manually adding a contact through the form auto-assigns you as owner
