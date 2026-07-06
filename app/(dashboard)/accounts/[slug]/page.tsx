@@ -1,0 +1,36 @@
+import { db } from '@/lib/db';
+import { assertSubAccountAccess } from '@/lib/auth';
+import Link from 'next/link';
+
+export default async function SubAccountHome({ params }: { params: { slug: string } }) {
+  const subAccount = await db.subAccount.findUniqueOrThrow({ where: { slug: params.slug } });
+  await assertSubAccountAccess(subAccount.id);
+
+  const contactCount = await db.contact.count({ where: { subAccountId: subAccount.id } });
+
+  return (
+    <div className="space-y-6">
+      <h1 className="font-display text-3xl tracking-wide">{subAccount.name}</h1>
+      <p className="text-sm text-muted">{contactCount} contacts on file</p>
+
+      <div className="flex gap-3">
+        <Link
+          href={`/accounts/${params.slug}/settings/email`}
+          className="rounded-sm border border-line bg-panel px-4 py-2 text-sm hover:border-brass/60"
+        >
+          Email Settings
+        </Link>
+        <Link
+          href={`/accounts/${params.slug}/campaigns/new`}
+          className="rounded-sm border border-line bg-panel px-4 py-2 text-sm hover:border-brass/60"
+        >
+          New Campaign
+        </Link>
+      </div>
+
+      <p className="text-xs text-muted">
+        CRM, invoicing, and the rest of this account's dashboard land here next session.
+      </p>
+    </div>
+  );
+}
