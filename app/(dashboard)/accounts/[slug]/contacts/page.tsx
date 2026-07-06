@@ -26,6 +26,7 @@ export default async function ContactsPage({
               { lastName: { contains: q, mode: 'insensitive' } },
               { email: { contains: q, mode: 'insensitive' } },
               { phone: { contains: q } },
+              { address: { contains: q, mode: 'insensitive' } },
               { city: { contains: q, mode: 'insensitive' } },
             ],
           }
@@ -33,6 +34,7 @@ export default async function ContactsPage({
     },
     orderBy: { createdAt: 'desc' },
     take: 200,
+    include: { owner: true },
   });
 
   // Pull distinct tags across the sub-account for the filter row
@@ -69,7 +71,7 @@ export default async function ContactsPage({
         <input
           name="q"
           defaultValue={q}
-          placeholder="Search name, email, phone, city..."
+          placeholder="Search name, address, email, or phone..."
           className="w-72 rounded-sm border border-line bg-panel px-3 py-2 text-sm"
         />
         <button className="rounded-sm border border-line px-3 py-2 text-sm hover:border-brass/60">
@@ -108,6 +110,7 @@ export default async function ContactsPage({
               <th className="p-3">Contact</th>
               <th className="p-3">Location</th>
               <th className="p-3">Tags</th>
+              <th className="p-3">Owner</th>
               <th className="p-3">Status</th>
             </tr>
           </thead>
@@ -133,6 +136,9 @@ export default async function ContactsPage({
                     ))}
                   </div>
                 </td>
+                <td className="p-3 text-muted">
+                  {c.owner ? c.owner.name : <span className="text-flag">Unassigned</span>}
+                </td>
                 <td className="p-3">
                   {c.suppressed ? (
                     <span className="font-mono text-[10px] uppercase tracking-wide2 text-flag">Suppressed</span>
@@ -146,7 +152,7 @@ export default async function ContactsPage({
             ))}
             {contacts.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-sm text-muted">
+                <td colSpan={6} className="p-6 text-center text-sm text-muted">
                   No contacts yet.
                 </td>
               </tr>

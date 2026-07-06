@@ -15,11 +15,45 @@ export default async function ContactDetailPage({
   const contact = await db.contact.findUniqueOrThrow({
     where: { id: params.contactId },
     include: {
-      notes: { orderBy: { createdAt: 'desc' } },
+      notes: { orderBy: { createdAt: 'desc' }, include: { createdBy: true } },
       deals: { include: { stage: true, pipeline: true }, orderBy: { createdAt: 'desc' } },
       messages: { orderBy: { createdAt: 'asc' }, include: { sentBy: true } },
+      owner: true,
     },
   });
+
+  const isOwnerRole = ctx.user.agencyRoles.some((r) => r.role === 'OWNER');
+
+  const possibleAssignees = await db.user.findMany({
+    where: {
+      OR: [
+        { agencyRoles: { some: { agencyId: subAccount.agencyId } } },
+        { subAccountRoles: { some: { subAccountId: subAccount.id } } },
+      ],
+    },
+  });
+
+  async function claimContact() {
+    'use server';
+    const userCtx = await assertSubAccountAccess(subAccount.id);
+    // Only claim if still unowned - avoids a race where two people click at once
+    await db.contact.updateMany({
+      where: { id: contact.id, ownerId: null },
+      data: { ownerId: userCtx.user.id },
+    });
+    redirect(`/accounts/${params.slug}/contacts/${contact.id}`);
+  }
+
+  async function reassignOwner(formData: FormData) {
+    'use server';
+    const userCtx = await assertSubAccountAccess(subAccount.id);
+    const isOwner = userCtx.user.agencyRoles.some((r) => r.role === 'OWNER');
+    if (!isOwner) throw new Error('Only the agency owner can reassign a contact that already has an owner');
+
+    const newOwnerId = (formData.get('ownerId') as string) || null;
+    await db.contact.update({ where: { id: contact.id }, data: { ownerId: newOwnerId } });
+    redirect(`/accounts/${params.slug}/contacts/${contact.id}`);
+  }
 
   const industryFields = getIndustryFields(subAccount.industry);
   const customFields = (contact.customFields as Record<string, string>) || {};
@@ -52,7 +86,7 @@ export default async function ContactDetailPage({
 
   async function createDeal(formData: FormData) {
     'use server';
-    await assertSubAccountAccess(subAccount.id);
+    const userCtx = await assertSubAccountAccess(subAccount.id);
 
     let pipeline = await db.pipeline.findFirst({
       where: { subAccountId: subAccount.id },
@@ -82,6 +116,7 @@ export default async function ContactDetailPage({
         stageId: pipeline.stages[0].id,
         title,
         value: valueRaw ? parseFloat(valueRaw) : null,
+        ownerId: userCtx.user.id,
       },
     });
 
@@ -93,9 +128,17 @@ export default async function ContactDetailPage({
       {/* Left column: info */}
       <div className="space-y-4 lg:col-span-1">
         <div className="rounded-sm border border-line bg-panel p-5">
-          <h1 className="font-display text-2xl tracking-wide">
-            {contact.firstName} {contact.lastName}
-          </h1>
+          <div className="flex items-start justify-between">
+            <h1 className="font-display text-2xl tracking-wide">
+              {contact.firstName} {contact.lastName}
+            </h1>
+            <a
+              href={`/accounts/${params.slug}/contacts/${contact.id}/edit`}
+              className="rounded-sm border border-line px-2 py-1 font-mono text-[10px] uppercase tracking-wide2 hover:border-brass/60"
+            >
+              Edit
+            </a>
+          </div>
           <div className="mt-3 space-y-1 text-sm text-muted">
             {contact.email && <div>{contact.email}</div>}
             {contact.phone && <div className="font-mono">{contact.phone}</div>}
@@ -123,6 +166,37 @@ export default async function ContactDetailPage({
               <span className="text-muted">Unsubscribed</span>
             ) : (
               <span className="text-ink">Active</span>
+            )}
+          </div>
+
+          <div className="mt-4 border-t border-line pt-3">
+            <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">Owner</span>
+            {!contact.owner ? (
+              <form action={claimContact} className="mt-2">
+                <button className="rounded-sm bg-brass px-3 py-1.5 font-display text-xs tracking-wide text-base">
+                  Claim this lead
+                </button>
+              </form>
+            ) : isOwnerRole ? (
+              <form action={reassignOwner} className="mt-2 flex gap-2">
+                <select
+                  name="ownerId"
+                  defaultValue={contact.ownerId || ''}
+                  className="flex-1 rounded-sm border border-line bg-base px-2 py-1.5 text-sm"
+                >
+                  <option value="">Unassigned</option>
+                  {possibleAssignees.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name}
+                    </option>
+                  ))}
+                </select>
+                <button className="rounded-sm border border-line px-3 py-1.5 text-xs hover:border-brass/60">
+                  Save
+                </button>
+              </form>
+            ) : (
+              <div className="mt-1 text-sm">{contact.owner.name}</div>
             )}
           </div>
         </div>
@@ -198,7 +272,7 @@ export default async function ContactDetailPage({
               <div key={note.id} className="rounded-sm bg-base p-2 text-sm">
                 {note.body}
                 <div className="mt-1 font-mono text-[10px] text-muted">
-                  {note.createdAt.toLocaleDateString()}
+                  {note.createdBy?.name || 'Unknown'} — {note.createdAt.toLocaleDateString()}
                 </div>
               </div>
             ))}

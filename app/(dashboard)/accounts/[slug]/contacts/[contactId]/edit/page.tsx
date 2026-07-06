@@ -3,28 +3,36 @@ import { assertSubAccountAccess } from '@/lib/auth';
 import { getIndustryFields } from '@/lib/industryFields';
 import { redirect } from 'next/navigation';
 
-export default async function NewContactPage({ params }: { params: { slug: string } }) {
+export default async function EditContactPage({
+  params,
+}: {
+  params: { slug: string; contactId: string };
+}) {
   const subAccount = await db.subAccount.findUniqueOrThrow({ where: { slug: params.slug } });
   await assertSubAccountAccess(subAccount.id);
 
+  const contact = await db.contact.findUniqueOrThrow({ where: { id: params.contactId } });
   const industryFields = getIndustryFields(subAccount.industry);
+  const customFields = (contact.customFields as Record<string, string>) || {};
 
-  async function createContact(formData: FormData) {
+  async function saveContact(formData: FormData) {
     'use server';
-    const userCtx = await assertSubAccountAccess(subAccount.id);
+    await assertSubAccountAccess(subAccount.id);
 
-    const customFields: Record<string, string> = {};
+    const newCustomFields: Record<string, string> = {};
     for (const field of industryFields) {
       const value = formData.get(`custom_${field.key}`) as string;
-      if (value) customFields[field.key] = value;
+      if (value) newCustomFields[field.key] = value;
     }
 
     const tagsRaw = (formData.get('tags') as string) || '';
     const tags = tagsRaw.split(',').map((t) => t.trim()).filter(Boolean);
 
-    const contact = await db.contact.create({
+    // Owner is intentionally NOT editable here - it has its own claim/reassign
+    // flow on the contact detail page, gated separately.
+    await db.contact.update({
+      where: { id: contact.id },
       data: {
-        subAccountId: subAccount.id,
         firstName: formData.get('firstName') as string,
         lastName: (formData.get('lastName') as string) || null,
         email: (formData.get('email') as string) || null,
@@ -35,9 +43,7 @@ export default async function NewContactPage({ params }: { params: { slug: strin
         zip: (formData.get('zip') as string) || null,
         source: (formData.get('source') as string) || null,
         tags,
-        customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
-        createdById: userCtx.user.id,
-        ownerId: userCtx.user.id, // manually-added leads are owned by whoever added them
+        customFields: Object.keys(newCustomFields).length > 0 ? newCustomFields : undefined,
       },
     });
 
@@ -46,25 +52,25 @@ export default async function NewContactPage({ params }: { params: { slug: strin
 
   return (
     <div className="max-w-xl space-y-6">
-      <h1 className="font-display text-3xl tracking-wide">New Contact — {subAccount.name}</h1>
+      <h1 className="font-display text-3xl tracking-wide">Edit Contact</h1>
 
-      <form action={createContact} className="space-y-5 rounded-sm border border-line bg-panel p-5">
+      <form action={saveContact} className="space-y-5 rounded-sm border border-line bg-panel p-5">
         <div className="grid grid-cols-2 gap-3">
-          <Field label="First name" name="firstName" required />
-          <Field label="Last name" name="lastName" />
+          <Field label="First name" name="firstName" defaultValue={contact.firstName} required />
+          <Field label="Last name" name="lastName" defaultValue={contact.lastName || ''} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Email" name="email" type="email" />
-          <Field label="Phone" name="phone" placeholder="(555) 555-5555" />
+          <Field label="Email" name="email" type="email" defaultValue={contact.email || ''} />
+          <Field label="Phone" name="phone" defaultValue={contact.phone || ''} />
         </div>
-        <Field label="Address" name="address" />
+        <Field label="Address" name="address" defaultValue={contact.address || ''} />
         <div className="grid grid-cols-3 gap-3">
-          <Field label="City" name="city" />
-          <Field label="State" name="state" />
-          <Field label="Zip" name="zip" />
+          <Field label="City" name="city" defaultValue={contact.city || ''} />
+          <Field label="State" name="state" defaultValue={contact.state || ''} />
+          <Field label="Zip" name="zip" defaultValue={contact.zip || ''} />
         </div>
-        <Field label="Source" name="source" placeholder="Cold outreach, door knock, referral..." />
-        <Field label="Tags (comma-separated)" name="tags" placeholder="cold-lead, storm-zone-2026" />
+        <Field label="Source" name="source" defaultValue={contact.source || ''} />
+        <Field label="Tags (comma-separated)" name="tags" defaultValue={contact.tags.join(', ')} />
 
         {industryFields.length > 0 && industryFields[0].key !== 'notes' && (
           <div className="border-t border-line pt-4">
@@ -77,7 +83,7 @@ export default async function NewContactPage({ params }: { params: { slug: strin
                   key={field.key}
                   label={field.label}
                   name={`custom_${field.key}`}
-                  placeholder={field.placeholder}
+                  defaultValue={customFields[field.key] || ''}
                 />
               ))}
             </div>
@@ -85,7 +91,7 @@ export default async function NewContactPage({ params }: { params: { slug: strin
         )}
 
         <button className="rounded-sm bg-brass px-4 py-2 font-display text-sm tracking-wide text-base">
-          Create contact
+          Save changes
         </button>
       </form>
     </div>
@@ -95,13 +101,13 @@ export default async function NewContactPage({ params }: { params: { slug: strin
 function Field({
   label,
   name,
-  placeholder,
+  defaultValue,
   required,
   type = 'text',
 }: {
   label: string;
   name: string;
-  placeholder?: string;
+  defaultValue?: string;
   required?: boolean;
   type?: string;
 }) {
@@ -112,7 +118,7 @@ function Field({
         name={name}
         type={type}
         required={required}
-        placeholder={placeholder}
+        defaultValue={defaultValue}
         className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
       />
     </label>

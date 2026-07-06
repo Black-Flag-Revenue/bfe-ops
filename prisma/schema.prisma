@@ -109,6 +109,7 @@ model User {
   assignedDeals   Deal[] @relation("DealOwner")
   sentMessages    Message[]
   createdContacts Contact[] @relation("ContactCreatedBy")
+  ownedContacts   Contact[] @relation("ContactOwner")
   createdNotes    Note[] @relation("NoteCreatedBy")
 }
 
@@ -216,8 +217,14 @@ model Contact {
   // for roofing/HVAC (roof type, sqft, last serviced), etc. Free-form on
   // purpose since BFE spans several different industries.
   customFields Json?
-  createdById  String?  // who added this lead - null for CSV imports/unattributed
+  createdById  String?  // audit trail only - who literally added this record
   createdBy    User?    @relation("ContactCreatedBy", fields: [createdById], references: [id])
+  // Who currently owns/works this lead. Auto-set to the creator when an
+  // employee manually adds a contact. Null for CSV imports (unassigned) until
+  // someone claims it. Only the Agency OWNER can reassign an already-owned
+  // contact to someone else.
+  ownerId      String?
+  owner        User?    @relation("ContactOwner", fields: [ownerId], references: [id])
   notes        Note[]
   messages     Message[]
   deals        Deal[]

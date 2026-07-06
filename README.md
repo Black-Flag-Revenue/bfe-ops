@@ -210,11 +210,28 @@ creation actually sets an owner - that assignment isn't wired into the deal
 form yet (deals are created from a contact's page with no owner picker).
 
 ## CRM gaps still open (noted, not blocking)
-- No contact edit form - only create. Editing requires going into Prisma
-  Studio directly for now.
-- No deal editing (title/value/owner) after creation, no delete
+- No deal editing (title/value) after creation, no delete
 - No bulk contact actions (bulk tag, bulk delete, CSV export)
-- Deal owner isn't set anywhere - "Deals Owned" stats will be empty until this exists
+
+## Contact ownership rules
+- Manually adding a contact through the form auto-assigns you as owner
+- CSV imports leave contacts unowned (no owner)
+- Any employee with access can **claim** an unowned contact (button on the
+  contact page) - first to claim it owns it
+- Once a contact has an owner, **only the Agency OWNER role** can reassign
+  it to someone else - regular employees and even ADMIN-level agency users
+  cannot reassign an already-owned contact
+- Deals inherit the same pattern: whoever creates a deal becomes its owner
+
+## Contact editing
+`/accounts/[slug]/contacts/[contactId]/edit` - anyone with access can edit
+any field (name, contact info, address, tags, industry-specific fields).
+Owner is deliberately NOT part of this form - it's managed separately via
+the claim/reassign flow described above, so it can't be casually changed
+while editing other details.
+
+## Contacts search
+Now searches name, address, email, and phone (not just city).
 
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
