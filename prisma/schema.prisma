@@ -108,6 +108,8 @@ model User {
   subAccountRoles UserSubAccountRole[]
   assignedDeals   Deal[] @relation("DealOwner")
   sentMessages    Message[]
+  createdContacts Contact[] @relation("ContactCreatedBy")
+  createdNotes    Note[] @relation("NoteCreatedBy")
 }
 
 // Agency-level role: sees across all sub-accounts (you, senior staff)
@@ -214,6 +216,8 @@ model Contact {
   // for roofing/HVAC (roof type, sqft, last serviced), etc. Free-form on
   // purpose since BFE spans several different industries.
   customFields Json?
+  createdById  String?  // who added this lead - null for CSV imports/unattributed
+  createdBy    User?    @relation("ContactCreatedBy", fields: [createdById], references: [id])
   notes        Note[]
   messages     Message[]
   deals        Deal[]
@@ -230,6 +234,8 @@ model Note {
   contactId  String
   contact    Contact  @relation(fields: [contactId], references: [id])
   body       String
+  createdById String?
+  createdBy  User?    @relation("NoteCreatedBy", fields: [createdById], references: [id])
   createdAt  DateTime @default(now())
 }
 

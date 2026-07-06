@@ -31,6 +31,24 @@ export default async function AgencyDashboard() {
         <p className="mt-1 text-sm text-muted">
           {ctx.accessibleSubAccounts.length} sub-account{ctx.accessibleSubAccounts.length === 1 ? '' : 's'}
         </p>
+        {ctx.isAgencyLevel && (
+          <div className="mt-3 flex gap-2">
+            <Link
+              href="/agency/dashboard"
+              className="rounded-sm border border-line bg-panel px-3 py-1.5 text-xs hover:border-brass/60"
+            >
+              Company Dashboard
+            </Link>
+            {ctx.user.agencyRoles.some((r) => r.role === 'OWNER') && (
+              <Link
+                href="/agency/eyes-only"
+                className="rounded-sm border border-line bg-panel px-3 py-1.5 text-xs hover:border-brass/60"
+              >
+                Eyes Only
+              </Link>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

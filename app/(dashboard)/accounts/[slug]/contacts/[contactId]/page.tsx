@@ -26,10 +26,10 @@ export default async function ContactDetailPage({
 
   async function addNote(formData: FormData) {
     'use server';
-    await assertSubAccountAccess(subAccount.id);
+    const userCtx = await assertSubAccountAccess(subAccount.id);
     const body = formData.get('body') as string;
     if (body?.trim()) {
-      await db.note.create({ data: { contactId: contact.id, body } });
+      await db.note.create({ data: { contactId: contact.id, body, createdById: userCtx.user.id } });
     }
     redirect(`/accounts/${params.slug}/contacts/${contact.id}`);
   }

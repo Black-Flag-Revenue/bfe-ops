@@ -194,6 +194,28 @@ Built into every public site automatically:
   select sources on their own criteria; good structured data improves the
   odds, it doesn't force it
 
+## Dashboards - three tiers
+- `/agency/dashboard` - company-wide, any agency-level user (OWNER or ADMIN):
+  total contacts, open pipeline value, deals won (30d), sites live, emails
+  sent (30d), combined activity feed across every sub-account
+- `/agency/eyes-only` - **OWNER role only, not ADMIN** - per-employee stats
+  (contacts added, notes, emails sent, deals owned/won, last 30 days). Not
+  visible to other agency-level admins even if they have full account access.
+- `/accounts/[slug]/dashboard` - per-sub-account, visible to anyone with
+  access to that account: contacts, pipeline, deals won, sites live, last
+  campaign stats, recent replies
+
+Note: "Deals Owned" on the Eyes Only dashboard will read 0 until deal
+creation actually sets an owner - that assignment isn't wired into the deal
+form yet (deals are created from a contact's page with no owner picker).
+
+## CRM gaps still open (noted, not blocking)
+- No contact edit form - only create. Editing requires going into Prisma
+  Studio directly for now.
+- No deal editing (title/value/owner) after creation, no delete
+- No bulk contact actions (bulk tag, bulk delete, CSV export)
+- Deal owner isn't set anywhere - "Deals Owned" stats will be empty until this exists
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

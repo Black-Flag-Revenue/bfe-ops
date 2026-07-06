@@ -11,7 +11,7 @@ export default async function NewContactPage({ params }: { params: { slug: strin
 
   async function createContact(formData: FormData) {
     'use server';
-    await assertSubAccountAccess(subAccount.id);
+    const userCtx = await assertSubAccountAccess(subAccount.id);
 
     const customFields: Record<string, string> = {};
     for (const field of industryFields) {
@@ -36,6 +36,7 @@ export default async function NewContactPage({ params }: { params: { slug: strin
         source: (formData.get('source') as string) || null,
         tags,
         customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
+        createdById: userCtx.user.id,
       },
     });
 
