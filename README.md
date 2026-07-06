@@ -79,6 +79,29 @@ Resend's batch API, paced to respect their rate limit.
 - For real volume (tens of thousands+), move `sendCampaign` off the
   request/response cycle into a background job
 
+## Fixing "prepared statement already exists"
+Transaction-mode poolers (like Supabase's) don't support prepared statements
+the way Prisma expects by default. Fix: `DATABASE_URL` must end with
+`?pgbouncer=true&connection_limit=1`.
+
+## Seeding your sub-accounts
+After signing up once (which creates the Agency and makes you OWNER):
+```
+npm run db:seed
+```
+Creates: Scottish Tom Heating & Air, The Mobile Buff, Rob's Exterior Services,
+Honey Do List, Able Sterling Roofing, Texas Roof Guardians. Safe to re-run -
+skips any that already exist.
+
+## Sites (landing page generator) - foundation only
+`/accounts/[slug]/sites` - list + create a draft page (city, neighborhood,
+headline, selling points). This is step 1 of the hybrid plan discussed:
+**Not built yet:**
+- Auto-pulled data (storm history, satellite imagery dates)
+- Actual HTML generation from the form data
+- One-click deploy to Vercel (needs `VERCEL_API_TOKEN`, already in `.env.example`)
+Right now creating a site just saves a draft record - no live page yet.
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard
