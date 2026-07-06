@@ -267,10 +267,13 @@ real page they interact with, and you get real signal back.
 
 **What happens after acceptance** (matches how you actually work - no
 payment processing, no customer self-scheduling):
+- Customer sees a simple confirmation on the same landing page - no PDF
+  ever shown to them
 - You see the acceptance + chosen option on the invoice's internal detail
   page (`/accounts/[slug]/invoices/[invoiceId]`)
-- Download a clean PDF summary of exactly what was accepted (built with
-  `@react-pdf/renderer`) to hand off to the contractor
+- **Download PDF Summary** button - this is for YOU, not the customer:
+  download it after acceptance and email it to the contractor so they know
+  exactly what was approved (built with `@react-pdf/renderer`)
 - Set a `scheduledDate` yourself once you've coordinated with them
 
 **Not built / explicitly out of scope per your call:**

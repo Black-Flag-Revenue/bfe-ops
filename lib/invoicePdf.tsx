@@ -53,7 +53,9 @@ export function InvoicePdfDocument({
           <Text style={styles.badge}>Scheduled: {invoice.scheduledDate.toLocaleString()}</Text>
         )}
 
-        <Text style={styles.sectionTitle}>Line Items</Text>
+        <Text style={styles.sectionTitle}>
+          {invoice.acceptedOptionGroup ? `Accepted Scope: ${invoice.acceptedOptionGroup}` : 'Line Items'}
+        </Text>
         {relevantItems.map((item, i) => (
           <View key={i} style={styles.row}>
             <Text>{item.description} {item.qty > 1 ? `x${item.qty}` : ''}</Text>

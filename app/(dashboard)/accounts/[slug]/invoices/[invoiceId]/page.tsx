@@ -54,9 +54,13 @@ export default async function InvoiceDetailPage({
             href={`/api/invoices/${invoice.id}/pdf`}
             className="shrink-0 rounded-sm border border-line px-3 py-2 font-mono text-[10px] uppercase tracking-wide2 hover:border-brass/60"
           >
-            Download PDF
+            Download PDF Summary
           </a>
         </div>
+        <p className="mt-2 text-xs text-muted">
+          Customer link is the interactive page they view/approve. The PDF is for you - download
+          it after they accept and email it to the contractor so they know exactly what was approved.
+        </p>
         {invoice.status === 'DRAFT' && (
           <form action={markSent} className="mt-2">
             <button className="rounded-sm bg-brass px-3 py-1.5 font-mono text-[10px] uppercase tracking-wide2 text-base">
