@@ -102,6 +102,19 @@ headline, selling points). This is step 1 of the hybrid plan discussed:
 - One-click deploy to Vercel (needs `VERCEL_API_TOKEN`, already in `.env.example`)
 Right now creating a site just saves a draft record - no live page yet.
 
+## Employee access
+`/agency/team` (agency-level users only) - invite by email, choose:
+- **All accounts** - agency-wide access, same as you
+- **Specific accounts** - checkbox picker, scoped to only those sub-accounts
+Invites work before someone signs up: stored as a "pending invite" and
+automatically converted to real access the moment that email signs in via
+Clerk for the first time - no coordination needed on timing.
+
+## CRM status
+**Not started yet.** Schema exists (Contact, Deal, Pipeline, Stage all in
+`schema.prisma`) but there's no UI to view/add contacts or a pipeline board.
+This is the next thing to build.
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

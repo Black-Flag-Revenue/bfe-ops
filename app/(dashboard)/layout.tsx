@@ -1,4 +1,5 @@
 import { UserButton } from '@clerk/nextjs';
+import Link from 'next/link';
 import { getCurrentUserContext } from '@/lib/auth';
 import { AccountSwitcher } from '@/components/AccountSwitcher';
 import { redirect } from 'next/navigation';
@@ -29,7 +30,17 @@ export default async function DashboardLayout({
             isAgencyLevel={ctx.isAgencyLevel}
           />
         </div>
-        <UserButton afterSignOutUrl="/sign-in" />
+        <div className="flex items-center gap-4">
+          {ctx.isAgencyLevel && (
+            <Link
+              href="/agency/team"
+              className="font-mono text-xs uppercase tracking-wide2 text-muted hover:text-brass"
+            >
+              Team
+            </Link>
+          )}
+          <UserButton afterSignOutUrl="/sign-in" />
+        </div>
       </header>
       <main className="px-6 py-8">{children}</main>
     </div>

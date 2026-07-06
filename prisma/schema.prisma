@@ -23,6 +23,7 @@ model Agency {
 
   subAccounts SubAccount[]
   users       UserAgencyRole[]
+  pendingInvites PendingAgencyInvite[]
 }
 
 model SubAccount {
@@ -69,6 +70,7 @@ model SubAccount {
   invoices   Invoice[]
   sites      Site[]
   emailCampaigns EmailCampaign[]
+  pendingInvites PendingSubAccountInvite[]
 }
 
 // ─────────────────────────────────────────────
@@ -136,6 +138,31 @@ enum SubAccountRole {
   MANAGER // full control of this client's data
   MEMBER  // day-to-day: CRM, invoices, no settings/user management
   VIEWER  // read-only, e.g. reporting
+}
+
+// Lets you grant access to someone by email BEFORE they've ever signed in.
+// Consumed and deleted the moment that email's first Clerk sign-in happens
+// (see app/page.tsx) - turned into real UserAgencyRole/UserSubAccountRole rows.
+model PendingAgencyInvite {
+  id        String   @id @default(cuid())
+  email     String
+  agencyId  String
+  agency    Agency   @relation(fields: [agencyId], references: [id])
+  role      AgencyRole @default(ADMIN)
+  createdAt DateTime @default(now())
+
+  @@unique([email, agencyId])
+}
+
+model PendingSubAccountInvite {
+  id           String   @id @default(cuid())
+  email        String
+  subAccountId String
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  role         SubAccountRole @default(MEMBER)
+  createdAt    DateTime @default(now())
+
+  @@unique([email, subAccountId])
 }
 
 // ─────────────────────────────────────────────

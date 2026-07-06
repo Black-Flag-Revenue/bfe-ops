@@ -6,9 +6,10 @@ const SUB_ACCOUNTS: { name: string; industry: string }[] = [
   { name: 'Scottish Tom Heating & Air', industry: 'HVAC' },
   { name: 'The Mobile Buff', industry: 'Detailing' },
   { name: "Rob's Exterior Services", industry: 'Exterior Cleaning' },
-  { name: 'Honey Do List', industry: 'Handyman' },
+  { name: 'Honey Done List', industry: 'Handyman' },
   { name: 'Able Sterling Roofing', industry: 'Roofing' },
   { name: 'Texas Roof Guardians', industry: 'Roofing' },
+  { name: 'Wrench Rescue', industry: 'Handyman' },
 ];
 
 function slugify(name: string) {
