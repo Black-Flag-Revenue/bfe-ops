@@ -143,6 +143,30 @@ phone, address, city, state, zip, source, tags (comma or semicolon
 separated within the cell). Skips rows with no firstName, and skips
 duplicate emails within that sub-account.
 
+## Public client websites - one deployment, many domains
+No Vercel, no second host. One running Replit deployment serves the CRM
+(behind login) AND every client's public website (no login), decided by
+which domain the visitor typed in.
+
+**How it works:**
+- `OPS_APP_HOSTS` env var lists YOUR app's own domain(s) - anything else is
+  treated as a client's public site and skips Clerk auth entirely
+- Each SubAccount has a `primaryDomain` (e.g. `mobilebuff.com`), set at
+  `/accounts/[slug]/settings/website`
+- To actually go live: add that domain in Replit's own deployment settings
+  (Settings → Domains), pointing DNS at the same deployment you already have
+- A site marked `isHomepage` renders at the bare domain; any other site
+  renders at `yourdomain.com/[pathSlug]` (e.g. `/inland-estates`)
+- Sites are DRAFT until you hit Publish on the Sites list page
+
+**REQUIRED before this works: set `OPS_APP_HOSTS`** to your actual Replit
+dev/deployment URL(s), or the app will think ITS OWN domain is a client site
+and break the CRM.
+
+**Template:** `components/PublicSiteTemplate.tsx` - one clean single-page
+layout (hero, selling points, call button) used for every site, styled with
+that sub-account's brand color/logo/phone. Not fancy yet, but real and live.
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

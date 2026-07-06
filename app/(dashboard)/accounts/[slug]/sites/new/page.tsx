@@ -15,13 +15,21 @@ export default async function NewSitePage({ params }: { params: { slug: string }
     const heroHeadline = formData.get('heroHeadline') as string;
     const sellingPoints = formData.get('sellingPoints') as string;
 
+    const pathSlugRaw = formData.get('pathSlug') as string;
+    const isHomepage = formData.get('isHomepage') === 'on';
+    const pathSlug = isHomepage
+      ? null
+      : pathSlugRaw.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
     await db.site.create({
       data: {
         subAccountId: subAccount.id,
         name: `${subAccount.name} — ${city}${neighborhood ? ` (${neighborhood})` : ''}`,
         city,
         neighborhood,
-        templateId: 'default', // only one template exists so far
+        pathSlug,
+        isHomepage,
+        templateId: 'default',
         contentJson: { heroHeadline, sellingPoints },
         status: 'DRAFT',
       },
@@ -41,6 +49,15 @@ export default async function NewSitePage({ params }: { params: { slug: string }
       </div>
 
       <form action={createSite} className="space-y-4 rounded-sm border border-line bg-panel p-5">
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="isHomepage" />
+          This is the homepage (renders at the bare domain, not a subpath)
+        </label>
+        <Field
+          label="Path (if not homepage)"
+          name="pathSlug"
+          placeholder="inland-estates → yourdomain.com/inland-estates"
+        />
         <Field label="City" name="city" placeholder="San Antonio" required />
         <Field label="Neighborhood (optional)" name="neighborhood" placeholder="Alamo Heights" />
         <Field

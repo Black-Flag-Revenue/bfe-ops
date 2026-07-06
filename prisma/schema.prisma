@@ -39,6 +39,13 @@ model SubAccount {
   timezone   String   @default("America/New_York")
   active     Boolean  @default(true)
 
+  // The client's real public website domain (e.g. "mobilebuff.com") - point
+  // DNS at this Replit deployment, add it in Replit's deployment domain
+  // settings, and requests to that host get matched here and served the
+  // right site instead of the CRM.
+  primaryDomain String? @unique
+  businessPhone String? // shown as a click-to-call CTA on the public site
+
   // Branded sending email (Resend) - separate from any real hosted inbox
   // TRANSACTIONAL domain: invoices, reply threads, anything tied to an existing
   // customer relationship. Keep this domain's reputation clean.
@@ -338,21 +345,24 @@ model Site {
   name         String   // "Mobile Buff - Hershey PA"
   city         String?
   neighborhood String?
-  domain       String?  // custom domain if set
-  deployUrl    String?  // live URL (vercel/netlify)
+  // URL path under the sub-account's primaryDomain, e.g. "inland-estates"
+  // renders at mobilebuff.com/inland-estates. Ignored if isHomepage is true.
+  pathSlug     String?
+  isHomepage   Boolean  @default(false) // renders at the bare domain root
   templateId   String   // which base template this was generated from
   contentJson  Json     // form-filled + auto-pulled data used to generate the page
-  status       SiteStatus @default(DRAFT)
+  status       SiteStatus @default(DRAFT) // DRAFT = saved but not live, PUBLISHED = live on the domain
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   @@index([subAccountId])
+  @@unique([subAccountId, pathSlug])
 }
 
 enum SiteStatus {
   DRAFT
-  DEPLOYED
+  PUBLISHED
   ARCHIVED
 }
 

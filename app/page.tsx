@@ -1,8 +1,27 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+import { redirect, notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import { db } from '@/lib/db';
+import { isOpsHost } from '@/lib/opsHost';
+import { resolvePublicSite } from '@/lib/publicSite';
+import { PublicSiteTemplate } from '@/components/PublicSiteTemplate';
 
 export default async function RootPage() {
+  const host = headers().get('host') || '';
+
+  if (!isOpsHost(host)) {
+    const resolved = await resolvePublicSite(host, []);
+    if (!resolved) notFound();
+    return (
+      <PublicSiteTemplate
+        subAccount={resolved.subAccount}
+        contentJson={resolved.site.contentJson as any}
+        city={resolved.site.city}
+        neighborhood={resolved.site.neighborhood}
+      />
+    );
+  }
+
   const { userId: clerkId } = auth();
   if (!clerkId) redirect('/sign-in');
 
