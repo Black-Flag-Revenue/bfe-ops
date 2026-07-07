@@ -80,7 +80,7 @@ export default async function WebsiteSettingsPage({ params }: { params: { slug: 
           </p>
           <div className="mt-3 space-y-3">
             <Field label="Street address" name="streetAddress" defaultValue={subAccount.streetAddress || ''} placeholder="123 Main St" />
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Field label="City" name="seoCity" defaultValue={subAccount.seoCity || ''} />
               <Field label="State" name="seoState" defaultValue={subAccount.seoState || ''} />
               <Field label="Zip" name="seoZip" defaultValue={subAccount.seoZip || ''} />

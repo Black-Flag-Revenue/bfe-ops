@@ -24,7 +24,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen">
-      <header className="flex items-center justify-between border-b border-line bg-panel/60 px-6 py-3 backdrop-blur">
+      <header className="flex flex-wrap items-center justify-between gap-y-2 border-b border-line bg-panel/60 px-4 py-3 backdrop-blur sm:px-6">
         <div className="flex items-center gap-4">
           <div className="rounded-sm bg-ink px-3 py-1.5">
             <Image src="/logo.png" alt="Black Flag Edge" width={140} height={40} className="h-7 w-auto" priority />

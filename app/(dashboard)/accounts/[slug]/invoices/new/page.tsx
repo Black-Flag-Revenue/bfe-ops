@@ -53,7 +53,7 @@ export default async function NewInvoicePage({ params }: { params: { slug: strin
       <h1 className="font-display text-3xl tracking-wide">New Estimate / Invoice</h1>
 
       <form action={createInvoice} className="space-y-5 rounded-sm border border-line bg-panel p-5">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
             <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">Type</span>
             <select name="type" className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm">

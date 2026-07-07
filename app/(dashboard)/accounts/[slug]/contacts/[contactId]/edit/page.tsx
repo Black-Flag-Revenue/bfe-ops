@@ -55,16 +55,16 @@ export default async function EditContactPage({
       <h1 className="font-display text-3xl tracking-wide">Edit Contact</h1>
 
       <form action={saveContact} className="space-y-5 rounded-sm border border-line bg-panel p-5">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="First name" name="firstName" defaultValue={contact.firstName} required />
           <Field label="Last name" name="lastName" defaultValue={contact.lastName || ''} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Email" name="email" type="email" defaultValue={contact.email || ''} />
           <Field label="Phone" name="phone" defaultValue={contact.phone || ''} />
         </div>
         <Field label="Address" name="address" defaultValue={contact.address || ''} />
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Field label="City" name="city" defaultValue={contact.city || ''} />
           <Field label="State" name="state" defaultValue={contact.state || ''} />
           <Field label="Zip" name="zip" defaultValue={contact.zip || ''} />
@@ -77,7 +77,7 @@ export default async function EditContactPage({
             <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
               {subAccount.industry} details
             </span>
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
               {industryFields.map((field) => (
                 <Field
                   key={field.key}

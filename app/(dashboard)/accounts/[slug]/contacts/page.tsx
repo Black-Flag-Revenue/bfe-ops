@@ -95,6 +95,12 @@ export default async function ContactsPage({
           <p className="mt-1 text-sm text-muted">{contacts.length} shown</p>
         </div>
         <div className="flex gap-2">
+          <a
+            href={`/api/accounts/${params.slug}/contacts/export`}
+            className="rounded-sm border border-line px-4 py-2 font-display text-sm tracking-wide hover:border-brass/60"
+          >
+            Export CSV
+          </a>
           <Link
             href={`/accounts/${params.slug}/contacts/import`}
             className="rounded-sm border border-line px-4 py-2 font-display text-sm tracking-wide hover:border-brass/60"

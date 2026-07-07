@@ -49,16 +49,16 @@ export default async function NewContactPage({ params }: { params: { slug: strin
       <h1 className="font-display text-3xl tracking-wide">New Contact — {subAccount.name}</h1>
 
       <form action={createContact} className="space-y-5 rounded-sm border border-line bg-panel p-5">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="First name" name="firstName" required />
           <Field label="Last name" name="lastName" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Email" name="email" type="email" />
           <Field label="Phone" name="phone" placeholder="(555) 555-5555" />
         </div>
         <Field label="Address" name="address" />
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Field label="City" name="city" />
           <Field label="State" name="state" />
           <Field label="Zip" name="zip" />
@@ -71,7 +71,7 @@ export default async function NewContactPage({ params }: { params: { slug: strin
             <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
               {subAccount.industry} details
             </span>
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
               {industryFields.map((field) => (
                 <Field
                   key={field.key}

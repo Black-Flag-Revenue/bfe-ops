@@ -69,6 +69,15 @@ export default async function SitesPage({ params }: { params: { slug: string } }
               ) : (
                 <p className="mt-3 text-xs text-muted">No domain connected yet</p>
               )}
+              <div className="mt-2 flex items-center gap-3">
+                <a
+                  href={`/accounts/${params.slug}/sites/${site.id}/preview`}
+                  target="_blank"
+                  className="font-mono text-[10px] uppercase tracking-wide2 text-muted hover:text-brass"
+                >
+                  Preview
+                </a>
+              </div>
               <form action={togglePublish} className="mt-3">
                 <input type="hidden" name="siteId" value={site.id} />
                 <input type="hidden" name="nextStatus" value={site.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'} />

@@ -255,7 +255,7 @@ model Contact {
 model Note {
   id         String   @id @default(cuid())
   contactId  String
-  contact    Contact  @relation(fields: [contactId], references: [id])
+  contact    Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
   body       String
   createdById String?
   createdBy  User?    @relation("NoteCreatedBy", fields: [createdById], references: [id])
@@ -267,8 +267,7 @@ model Note {
 model Message {
   id          String   @id @default(cuid())
   contactId   String
-  contact     Contact  @relation(fields: [contactId], references: [id])
-
+  contact     Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
   direction   MessageDirection
   subject     String?
   bodyText    String?
@@ -313,7 +312,7 @@ model Deal {
   subAccountId String
   subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
   contactId    String
-  contact      Contact  @relation(fields: [contactId], references: [id])
+  contact      Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
   pipelineId   String
   pipeline     Pipeline @relation(fields: [pipelineId], references: [id])
   stageId      String
@@ -339,7 +338,7 @@ model Invoice {
   subAccountId String
   subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
   contactId    String?
-  contact      Contact? @relation(fields: [contactId], references: [id])
+  contact      Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
   number       String   // human-facing invoice/estimate number
   type         InvoiceType @default(ESTIMATE)
@@ -457,7 +456,7 @@ model CampaignRecipient {
   campaignId String
   campaign   EmailCampaign @relation(fields: [campaignId], references: [id])
   contactId  String
-  contact    Contact  @relation(fields: [contactId], references: [id])
+  contact    Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
   sentAt     DateTime @default(now())
 
   @@unique([campaignId, contactId])

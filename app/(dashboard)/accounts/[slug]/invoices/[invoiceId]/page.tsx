@@ -38,6 +38,16 @@ export default async function InvoiceDetailPage({
     redirect(`/accounts/${params.slug}/invoices/${invoice.id}`);
   }
 
+  async function reopenEstimate() {
+    'use server';
+    await assertSubAccountAccess(subAccount.id);
+    await db.invoice.update({
+      where: { id: invoice.id },
+      data: { acceptedAt: null, acceptedOptionGroup: null, status: 'VIEWED', scheduledDate: null },
+    });
+    redirect(`/accounts/${params.slug}/invoices/${invoice.id}`);
+  }
+
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-start justify-between">
@@ -94,7 +104,15 @@ export default async function InvoiceDetailPage({
 
       {invoice.acceptedAt && (
         <div className="rounded-sm border border-brass/40 bg-brass/5 p-4 text-sm text-brass">
-          Accepted {invoice.acceptedAt.toLocaleString()} — chose "{invoice.acceptedOptionGroup}"
+          <div>Accepted {invoice.acceptedAt.toLocaleString()} — chose "{invoice.acceptedOptionGroup}"</div>
+          <form action={reopenEstimate} className="mt-2">
+            <button className="rounded-sm border border-brass px-3 py-1 font-mono text-[10px] uppercase tracking-wide2 hover:bg-brass/10">
+              Reopen for Revision
+            </button>
+          </form>
+          <p className="mt-1 text-xs text-muted">
+            Customer's link goes back to letting them pick again - use this if they change their mind.
+          </p>
         </div>
       )}
 

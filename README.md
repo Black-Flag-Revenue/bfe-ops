@@ -343,6 +343,25 @@ payment processing, no customer self-scheduling):
   gallery (multiple images) field, same "paste a hosted link" pattern used
   for logos/avatars everywhere else in the app.
 
+## Review pass - bug fix + 3 requested additions
+- **Fixed a real bug**: deleting a contact would have thrown a database
+  error if it had any notes, deals, messages, or campaign history (which
+  is nearly every real contact). Added proper cascade rules - deleting a
+  contact now cleanly removes its notes/deals/messages/send-history.
+  Invoices stay on record (just unlink from the deleted contact) since
+  those are financial records worth keeping regardless.
+- **Draft site preview**: every site card now has a "Preview" link -
+  renders exactly like the live page (structured data included) without
+  needing to publish first. Internal/authenticated only.
+- **Reopen an accepted estimate**: "Reopen for Revision" button appears
+  once accepted - resets it back to viewable/selectable if the customer
+  wants to switch tiers after the fact.
+- **CSV export**: `/api/accounts/[slug]/contacts/export` - button next to
+  Import CSV on the contacts list.
+- **Responsive pass**: fixed several forms that were hard-coded to 2-3
+  columns even on narrow screens (now collapse to 1 column below `sm`),
+  header now wraps instead of overflowing on narrower/portrait tablet widths.
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard
