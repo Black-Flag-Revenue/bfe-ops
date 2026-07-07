@@ -38,7 +38,7 @@ export default async function AgencyDashboard() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl tracking-wide">
+          <h1 className="font-serif text-3xl font-semibold tracking-tight">
             {ctx.isAgencyLevel ? 'Black Flag Edge' : 'Your Accounts'}
           </h1>
           <p className="mt-1 text-sm text-muted">
@@ -74,23 +74,29 @@ export default async function AgencyDashboard() {
             <Link
               key={acct.id}
               href={`/accounts/${acct.slug}`}
-              className="group flex items-start gap-3 rounded-sm border border-line bg-panel p-4 transition-all hover:border-brass/50 hover:bg-panel/80"
+              className="group flex items-start gap-3.5 rounded-sm border border-line bg-panel p-4 transition-all hover:border-brass/40 hover:-translate-y-0.5"
             >
               <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-line text-base"
-                style={{ backgroundColor: acct.brandColor ? `${acct.brandColor}20` : undefined, color: acct.brandColor || undefined }}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-all"
+                style={{
+                  borderColor: acct.brandColor ? `${acct.brandColor}50` : 'rgba(184,147,63,0.3)',
+                  background: acct.brandColor
+                    ? `linear-gradient(to bottom, ${acct.brandColor}20, transparent)`
+                    : 'linear-gradient(to bottom, rgba(184,147,63,0.1), transparent)',
+                  color: acct.brandColor || '#B8933F',
+                }}
               >
-                <Icon size={20} strokeWidth={1.75} className={!acct.brandColor ? 'text-muted' : ''} />
+                <Icon size={19} strokeWidth={1.5} />
               </div>
-              <div className="flex-1">
-                <div className="font-display text-lg leading-tight">{acct.name}</div>
+              <div className="flex-1 pt-0.5">
+                <div className="font-serif text-lg font-semibold leading-tight text-ink">{acct.name}</div>
                 {acct.industry && (
                   <div className="mt-0.5 font-mono text-[10px] uppercase tracking-wide2 text-muted">
                     {acct.industry}
                   </div>
                 )}
               </div>
-              <ArrowRight size={16} className="mt-2 shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+              <ArrowRight size={16} className="mt-2.5 shrink-0 text-brass opacity-0 transition-opacity group-hover:opacity-100" />
             </Link>
           );
         })}

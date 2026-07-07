@@ -1,11 +1,17 @@
 import { ClerkProvider } from '@clerk/nextjs';
-import { Barlow_Condensed, Inter, IBM_Plex_Mono } from 'next/font/google';
+import { Barlow_Condensed, Inter, IBM_Plex_Mono, Playfair_Display } from 'next/font/google';
 import './globals.css';
 
 const barlowCondensed = Barlow_Condensed({
   subsets: ['latin'],
   weight: ['500', '600', '700'],
   variable: '--font-barlow-condensed',
+});
+
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  variable: '--font-playfair',
 });
 
 const inter = Inter({
@@ -27,7 +33,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${barlowCondensed.variable} ${inter.variable} ${ibmPlexMono.variable}`}>
+      <html lang="en" className={`${barlowCondensed.variable} ${playfairDisplay.variable} ${inter.variable} ${ibmPlexMono.variable}`}>
         <body className="bg-base text-ink font-body antialiased">{children}</body>
       </html>
     </ClerkProvider>

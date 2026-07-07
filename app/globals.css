@@ -11,9 +11,36 @@
   scrollbar-color: #33382F #0B0D0C;
 }
 
-/* Subtle depth on every card/panel surface, applied globally so we don't
-   have to touch every individual page - the bg-panel class is used
-   consistently everywhere as the "raised surface" pattern. */
+/* Subtle depth instead of flat black - a faint radial glow reads as
+   premium/considered rather than a plain dark theme. */
+body {
+  background:
+    radial-gradient(ellipse 1200px 600px at 50% -10%, rgba(184, 147, 63, 0.06), transparent),
+    #0B0D0C;
+  background-attachment: fixed;
+}
+
+/* Every card/panel surface: thin gold hairline at the top (like a
+   letterpress rule on old-money stationery) + subtle depth shadow. Applied
+   globally via the bg-panel class used consistently across the app. */
 .bg-panel {
+  position: relative;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.bg-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(184, 147, 63, 0.35), transparent);
+}
+
+/* Cards that are links/interactive get a refined glow on hover, not just a
+   border color swap - reads more considered/premium. */
+a.bg-panel:hover,
+.bg-panel a:hover {
+  box-shadow: 0 4px 16px rgba(184, 147, 63, 0.12), 0 0 0 1px rgba(184, 147, 63, 0.25);
 }

@@ -78,7 +78,7 @@ function Stat({ icon: Icon, label, value, sub }: { icon: any; label: string; val
     <div className="rounded-sm border border-line bg-panel p-4">
       <Icon size={16} strokeWidth={1.75} className="text-brass" />
       <div className="mt-2 font-mono text-[10px] uppercase tracking-wide2 text-muted">{label}</div>
-      <div className="mt-1 font-display text-2xl">{value}</div>
+      <div className="mt-1 font-serif text-2xl font-bold text-ink">{value}</div>
       {sub && <div className="mt-0.5 text-xs text-muted">{sub}</div>}
     </div>
   );

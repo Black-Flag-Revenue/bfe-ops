@@ -379,6 +379,25 @@ surfaces:
 This is a first pass on the pages used most - if specific other pages still
 feel bare, point me at them and I'll keep going in the same direction.
 
+## Design direction: high-tech x old-money
+Deliberate duality, not a uniform re-skin:
+- **Serif (Playfair Display)** for page titles, sub-account/agency names, and
+  big stat numbers - the "old ledger / private bank statement" feel
+- **Condensed sans + monospace stay** for section labels, nav, and data
+  tags - the "high-tech terminal" feel. Mixing both is the point; going
+  all-serif would lose the technical edge, all-sans would lose the weight.
+- Icon boxes are now circular gold-ring medallions (coin/seal feel) instead
+  of plain squares, brass-tinted by default rather than only on hover
+- Panel surfaces get a thin gold hairline at the top (letterpress-style
+  rule) plus a subtle glow-on-hover instead of a flat border color swap
+- Background has a very faint radial gold vignette instead of flat black,
+  for depth without looking like a generic dark theme
+- Added a deep hunter-green (`emerald`) as a secondary accent color,
+  available for future use - not applied everywhere yet
+
+This is iterative - if a specific page still doesn't land, point me at it
+directly rather than me guessing at another full pass.
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

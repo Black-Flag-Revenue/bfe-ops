@@ -27,7 +27,7 @@ export default async function SubAccountHome({ params }: { params: { slug: strin
               // eslint-disable-next-line @next/next/no-img-element
               <img src={subAccount.logoUrl} alt="" className="h-9 w-9 rounded-sm object-cover border border-line" />
             )}
-            <h1 className="font-display text-3xl tracking-wide">{subAccount.name}</h1>
+            <h1 className="font-serif text-3xl font-semibold tracking-tight">{subAccount.name}</h1>
           </div>
           {subAccount.industry && (
             <span className="mt-1 inline-block rounded-full border border-line px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wide2 text-muted">
@@ -92,7 +92,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function QuickStat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-sm border border-line bg-panel px-4 py-2 text-center">
-      <div className="font-display text-xl leading-none">{value}</div>
+      <div className="font-serif text-xl font-bold leading-none text-ink">{value}</div>
       <div className="mt-1 font-mono text-[9px] uppercase tracking-wide2 text-muted">{label}</div>
     </div>
   );
@@ -114,16 +114,16 @@ function NavCard({ href, icon: Icon, title, desc }: { href: string; icon: any; t
   return (
     <Link
       href={href}
-      className="group flex items-start gap-3 rounded-sm border border-line bg-panel p-4 transition-all hover:border-brass/50 hover:bg-panel/80"
+      className="group flex items-start gap-3.5 rounded-sm border border-line bg-panel p-4 transition-all hover:border-brass/40 hover:-translate-y-0.5"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-line bg-base text-muted transition-colors group-hover:border-brass/50 group-hover:text-brass">
-        <Icon size={18} strokeWidth={1.75} />
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-brass/30 bg-gradient-to-b from-brass/10 to-transparent text-brass/80 transition-all group-hover:border-brass group-hover:text-brass">
+        <Icon size={18} strokeWidth={1.5} />
       </div>
-      <div className="flex-1">
-        <div className="font-display text-base leading-tight text-ink">{title}</div>
+      <div className="flex-1 pt-0.5">
+        <div className="font-serif text-lg font-semibold leading-tight text-ink">{title}</div>
         <div className="mt-0.5 text-xs text-muted">{desc}</div>
       </div>
-      <ArrowRight size={16} className="mt-2 shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+      <ArrowRight size={16} className="mt-2.5 shrink-0 text-brass opacity-0 transition-opacity group-hover:opacity-100" />
     </Link>
   );
 }
