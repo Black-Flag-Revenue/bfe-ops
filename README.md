@@ -398,6 +398,18 @@ Deliberate duality, not a uniform re-skin:
 This is iterative - if a specific page still doesn't land, point me at it
 directly rather than me guessing at another full pass.
 
+## Deleting a sub-account
+`/accounts/[slug]/settings/general` - "Danger zone" section, Owner-only,
+requires typing the exact business name to confirm. Fixed the same class of
+cascade-delete bug as contacts: every piece of a sub-account's data
+(contacts, deals, pipeline/stages, sites, invoices, campaigns, roles) now
+has proper cascade rules, so deleting a sub-account actually works instead
+of hitting a database error.
+
+## Account switcher now matches the rest of the design
+Was still using the old flat-dot styling from before the design pass -
+updated to the same medallion icons + serif names used everywhere else.
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

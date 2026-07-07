@@ -133,7 +133,7 @@ model UserSubAccountRole {
   userId       String
   user         User     @relation(fields: [userId], references: [id])
   subAccountId String
-  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
   role         SubAccountRole @default(MEMBER)
 
   @@unique([userId, subAccountId])
@@ -197,7 +197,7 @@ model PendingSubAccountInvite {
   name         String?
   avatarUrl    String?
   subAccountId String
-  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
   role         SubAccountRole @default(MEMBER)
   createdAt    DateTime @default(now())
 
@@ -211,7 +211,7 @@ model PendingSubAccountInvite {
 model Contact {
   id           String   @id @default(cuid())
   subAccountId String
-  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
 
   firstName    String
   lastName     String?
@@ -292,7 +292,7 @@ enum MessageDirection {
 model Pipeline {
   id           String   @id @default(cuid())
   subAccountId String
-  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
   name         String   // "Roofing Sales Pipeline"
   stages       Stage[]
   deals        Deal[]
@@ -301,7 +301,7 @@ model Pipeline {
 model Stage {
   id          String   @id @default(cuid())
   pipelineId  String
-  pipeline    Pipeline @relation(fields: [pipelineId], references: [id])
+  pipeline    Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
   name        String   // "New Lead", "Quoted", "Won", "Lost"
   order       Int
   deals       Deal[]
@@ -310,13 +310,13 @@ model Stage {
 model Deal {
   id           String   @id @default(cuid())
   subAccountId String
-  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
   contactId    String
   contact      Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
   pipelineId   String
-  pipeline     Pipeline @relation(fields: [pipelineId], references: [id])
+  pipeline     Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
   stageId      String
-  stage        Stage    @relation(fields: [stageId], references: [id])
+  stage        Stage    @relation(fields: [stageId], references: [id], onDelete: Cascade)
 
   title        String
   value        Decimal? @db.Decimal(10, 2)
@@ -336,7 +336,7 @@ model Deal {
 model Invoice {
   id           String   @id @default(cuid())
   subAccountId String
-  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
   contactId    String?
   contact      Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
@@ -395,7 +395,7 @@ enum InvoiceStatus {
 model Site {
   id           String   @id @default(cuid())
   subAccountId String
-  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
 
   name         String   // "Mobile Buff - Hershey PA"
   city         String?
@@ -432,7 +432,7 @@ enum SiteStatus {
 model EmailCampaign {
   id           String   @id @default(cuid())
   subAccountId String
-  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
 
   name         String
   subject      String
@@ -454,7 +454,7 @@ model EmailCampaign {
 model CampaignRecipient {
   id         String   @id @default(cuid())
   campaignId String
-  campaign   EmailCampaign @relation(fields: [campaignId], references: [id])
+  campaign   EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   contactId  String
   contact    Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
   sentAt     DateTime @default(now())
