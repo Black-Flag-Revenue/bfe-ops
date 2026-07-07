@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { assertSubAccountAccess } from '@/lib/auth';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { Globe } from 'lucide-react';
 
 export default async function SitesPage({ params }: { params: { slug: string } }) {
   const subAccount = await db.subAccount.findUniqueOrThrow({ where: { slug: params.slug } });
@@ -90,9 +91,10 @@ export default async function SitesPage({ params }: { params: { slug: string } }
         })}
 
         {sites.length === 0 && (
-          <p className="col-span-full text-sm text-muted">
-            No sites yet — create your first one.
-          </p>
+          <div className="col-span-full rounded-sm border border-dashed border-line py-10 text-center">
+            <Globe size={28} strokeWidth={1.5} className="mx-auto text-line" />
+            <p className="mt-2 text-sm text-muted">No sites yet — create your first one.</p>
+          </div>
         )}
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
 import { assertSubAccountAccess } from '@/lib/auth';
+import { Users, TrendingUp, Trophy, Globe } from 'lucide-react';
 
 export default async function SubAccountDashboard({ params }: { params: { slug: string } }) {
   const subAccount = await db.subAccount.findUniqueOrThrow({ where: { slug: params.slug } });
@@ -38,10 +39,10 @@ export default async function SubAccountDashboard({ params }: { params: { slug: 
       <h1 className="font-display text-3xl tracking-wide">{subAccount.name} — Dashboard</h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        <Stat label="Contacts" value={contactCount.toLocaleString()} />
-        <Stat label="Open Pipeline" value={`$${openDealsValue.toLocaleString()}`} />
-        <Stat label="Won This Month" value={`$${wonThisMonthValue.toLocaleString()}`} sub={`${wonThisMonth.length} deals`} />
-        <Stat label="Sites Live" value={sitesLive.toLocaleString()} />
+        <Stat icon={Users} label="Contacts" value={contactCount.toLocaleString()} />
+        <Stat icon={TrendingUp} label="Open Pipeline" value={`$${openDealsValue.toLocaleString()}`} />
+        <Stat icon={Trophy} label="Won This Month" value={`$${wonThisMonthValue.toLocaleString()}`} sub={`${wonThisMonth.length} deals`} />
+        <Stat icon={Globe} label="Sites Live" value={sitesLive.toLocaleString()} />
       </div>
 
       {lastCampaign && (
@@ -72,10 +73,11 @@ export default async function SubAccountDashboard({ params }: { params: { slug: 
   );
 }
 
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Stat({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-sm border border-line bg-panel p-4">
-      <div className="font-mono text-[10px] uppercase tracking-wide2 text-muted">{label}</div>
+      <Icon size={16} strokeWidth={1.75} className="text-brass" />
+      <div className="mt-2 font-mono text-[10px] uppercase tracking-wide2 text-muted">{label}</div>
       <div className="mt-1 font-display text-2xl">{value}</div>
       {sub && <div className="mt-0.5 text-xs text-muted">{sub}</div>}
     </div>

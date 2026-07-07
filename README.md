@@ -362,6 +362,23 @@ payment processing, no customer self-scheduling):
   columns even on narrow screens (now collapse to 1 column below `sm`),
   header now wraps instead of overflowing on narrower/portrait tablet widths.
 
+## Visual polish pass
+Added `lucide-react` icon library and used it across the highest-traffic
+surfaces:
+- Sub-account home page rebuilt from a wall of plain buttons into a proper
+  hub: quick stats, quick-action pills, and grouped icon cards (Sales & CRM
+  / Marketing & Web / Settings)
+- Agency landing page: sub-account cards now show an industry-appropriate
+  icon (roofing, HVAC, detailing, etc.) in a colored badge matching their
+  brand color, hover reveals an arrow
+- Header: real icons instead of an emoji bell, wraps cleanly on narrower/
+  portrait tablet widths instead of overflowing
+- Dashboard stat cards (company-wide + per-sub-account) now have icons
+- Empty states on contacts/sites lists use an icon instead of plain text
+
+This is a first pass on the pages used most - if specific other pages still
+feel bare, point me at them and I'll keep going in the same direction.
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { getCurrentUserContext } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { Users, TrendingUp, Trophy, Globe, Send } from 'lucide-react';
 
 export default async function AgencyWideDashboard() {
   const ctx = await getCurrentUserContext();
@@ -89,11 +90,11 @@ export default async function AgencyWideDashboard() {
       <h1 className="font-display text-3xl tracking-wide">Black Flag Edge — Company Dashboard</h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        <Stat label="Total Contacts" value={totalContacts.toLocaleString()} />
-        <Stat label="Open Pipeline Value" value={`$${openDealsValue.toLocaleString()}`} />
-        <Stat label="Won This Month" value={`$${wonThisMonthValue.toLocaleString()}`} sub={`${wonDealsThisMonth.length} deals`} />
-        <Stat label="Sites Live" value={sitesLive.toLocaleString()} />
-        <Stat label="Emails Sent (30d)" value={emailsSentThisMonth.toLocaleString()} />
+        <Stat icon={Users} label="Total Contacts" value={totalContacts.toLocaleString()} />
+        <Stat icon={TrendingUp} label="Open Pipeline Value" value={`$${openDealsValue.toLocaleString()}`} />
+        <Stat icon={Trophy} label="Won This Month" value={`$${wonThisMonthValue.toLocaleString()}`} sub={`${wonDealsThisMonth.length} deals`} />
+        <Stat icon={Globe} label="Sites Live" value={sitesLive.toLocaleString()} />
+        <Stat icon={Send} label="Emails Sent (30d)" value={emailsSentThisMonth.toLocaleString()} />
       </div>
 
       <div className="rounded-sm border border-line bg-panel p-5">
@@ -114,10 +115,11 @@ export default async function AgencyWideDashboard() {
   );
 }
 
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Stat({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-sm border border-line bg-panel p-4">
-      <div className="font-mono text-[10px] uppercase tracking-wide2 text-muted">{label}</div>
+      <Icon size={16} strokeWidth={1.75} className="text-brass" />
+      <div className="mt-2 font-mono text-[10px] uppercase tracking-wide2 text-muted">{label}</div>
       <div className="mt-1 font-display text-2xl">{value}</div>
       {sub && <div className="mt-0.5 text-xs text-muted">{sub}</div>}
     </div>

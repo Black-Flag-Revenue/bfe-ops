@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { UsersRound } from 'lucide-react';
 
 type Contact = {
   id: string;
@@ -154,8 +155,9 @@ export function ContactsBulkTable({
             ))}
             {contacts.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-6 text-center text-sm text-muted">
-                  No contacts match these filters.
+                <td colSpan={7} className="p-10 text-center">
+                  <UsersRound size={28} strokeWidth={1.5} className="mx-auto text-line" />
+                  <p className="mt-2 text-sm text-muted">No contacts match these filters.</p>
                 </td>
               </tr>
             )}
