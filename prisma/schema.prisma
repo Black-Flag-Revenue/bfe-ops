@@ -349,6 +349,8 @@ model Invoice {
                          // offer Good/Better/Best style tiers; customer picks ONE group to accept
   links        Json?    // [{ label, url }] - supporting docs, photos, whatever
   videos       Json?    // [{ label, url }] - YouTube/Vimeo links, embedded on the page
+  introText    String?  // educational/context copy shown before the options - the "why" behind the work
+  termsText    String?  // authorization language shown above the approve button - falls back to a default if blank
   subtotal     Decimal  @db.Decimal(10, 2)
   tax          Decimal  @db.Decimal(10, 2) @default(0)
   total        Decimal  @db.Decimal(10, 2)
@@ -358,9 +360,11 @@ model Invoice {
   firstViewedAt  DateTime?
   lastViewedAt   DateTime?
 
-  // Acceptance - customer picks an option group and approves right on the page
+  // Acceptance - customer picks an option group, types their name to
+  // authorize (like a signature line), and approves right on the page
   acceptedAt          DateTime?
   acceptedOptionGroup String?
+  acceptedByName      String?
 
   // Scheduling happens on your end after acceptance, not self-service by the customer
   scheduledDate DateTime?

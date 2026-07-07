@@ -35,6 +35,8 @@ export default async function EditInvoicePage({
     const newLineItems = parseLineItems(formData.get('lineItems') as string);
     const newLinks = parseLinkItems((formData.get('links') as string) || '');
     const newVideos = parseLinkItems((formData.get('videos') as string) || '');
+    const introText = (formData.get('introText') as string) || null;
+    const termsText = (formData.get('termsText') as string) || null;
     const contactId = (formData.get('contactId') as string) || null;
     const subtotal = groupTotal(newLineItems);
     const newTaxRate = parseFloat((formData.get('taxRate') as string) || '0') / 100;
@@ -47,6 +49,8 @@ export default async function EditInvoicePage({
         lineItems: newLineItems,
         links: newLinks.length > 0 ? newLinks : undefined,
         videos: newVideos.length > 0 ? newVideos : undefined,
+        introText,
+        termsText,
         subtotal,
         tax,
         total: subtotal + tax,
@@ -75,6 +79,18 @@ export default async function EditInvoicePage({
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="block">
+          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
+            Intro / educational copy
+          </span>
+          <textarea
+            name="introText"
+            rows={4}
+            defaultValue={invoice.introText || ''}
+            className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
+          />
         </label>
 
         <label className="block">
@@ -122,6 +138,18 @@ export default async function EditInvoicePage({
             rows={3}
             defaultValue={serializeLinkItems(videos)}
             className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm font-mono"
+          />
+        </label>
+
+        <label className="block">
+          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
+            Authorization terms
+          </span>
+          <textarea
+            name="termsText"
+            rows={3}
+            defaultValue={invoice.termsText || ''}
+            className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
           />
         </label>
 

@@ -24,6 +24,8 @@ export default async function NewInvoicePage({ params }: { params: { slug: strin
     const lineItems = parseLineItems(formData.get('lineItems') as string);
     const links = parseLinkItems((formData.get('links') as string) || '');
     const videos = parseLinkItems((formData.get('videos') as string) || '');
+    const introText = (formData.get('introText') as string) || null;
+    const termsText = (formData.get('termsText') as string) || null;
 
     const subtotal = groupTotal(lineItems);
     const taxRate = parseFloat((formData.get('taxRate') as string) || '0') / 100;
@@ -39,6 +41,8 @@ export default async function NewInvoicePage({ params }: { params: { slug: strin
         lineItems,
         links: links.length > 0 ? links : undefined,
         videos: videos.length > 0 ? videos : undefined,
+        introText,
+        termsText,
         subtotal,
         tax,
         total: subtotal + tax,
@@ -77,6 +81,22 @@ export default async function NewInvoicePage({ params }: { params: { slug: strin
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="block">
+          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
+            Intro / educational copy (optional) - shown before the pricing options
+          </span>
+          <p className="mt-1 text-xs text-muted">
+            This is the "why" - explain the problem, the recommended approach, whatever context
+            helps them make a confident decision. Shows as plain paragraph text on the page.
+          </p>
+          <textarea
+            name="introText"
+            rows={4}
+            placeholder="Based on our inspection, we found storm damage affecting approximately 40% of your roof's surface area..."
+            className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
+          />
         </label>
 
         <label className="block">
@@ -124,6 +144,18 @@ export default async function NewInvoicePage({ params }: { params: { slug: strin
             rows={3}
             placeholder={'Walkthrough of the damage | https://youtube.com/watch?v=...'}
             className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm font-mono"
+          />
+        </label>
+
+        <label className="block">
+          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
+            Authorization terms (optional) - shown above the signature field, has a sensible default if left blank
+          </span>
+          <textarea
+            name="termsText"
+            rows={3}
+            placeholder="By typing your name and clicking Approve, you authorize..."
+            className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
           />
         </label>
 

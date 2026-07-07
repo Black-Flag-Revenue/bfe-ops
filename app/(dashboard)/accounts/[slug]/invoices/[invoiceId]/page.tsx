@@ -104,7 +104,10 @@ export default async function InvoiceDetailPage({
 
       {invoice.acceptedAt && (
         <div className="rounded-sm border border-brass/40 bg-brass/5 p-4 text-sm text-brass">
-          <div>Accepted {invoice.acceptedAt.toLocaleString()} — chose "{invoice.acceptedOptionGroup}"</div>
+          <div>
+            Accepted {invoice.acceptedAt.toLocaleString()} — chose "{invoice.acceptedOptionGroup}"
+            {invoice.acceptedByName && ` — authorized by ${invoice.acceptedByName}`}
+          </div>
           <form action={reopenEstimate} className="mt-2">
             <button className="rounded-sm border border-brass px-3 py-1 font-mono text-[10px] uppercase tracking-wide2 hover:bg-brass/10">
               Reopen for Revision

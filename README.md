@@ -410,6 +410,24 @@ of hitting a database error.
 Was still using the old flat-dot styling from before the design pass -
 updated to the same medallion icons + serif names used everywhere else.
 
+## Estimate/invoice page - rebuilt to match the ReportLab PDF quality bar
+The original version was too bare - rebuilt as a real document-style page:
+- **Letterhead**: logo, business name, address/phone, document number and
+  date, "Prepared for" block with the contact's info
+- **QR code**: auto-generated, links back to the same page (scan to
+  revisit) - shown right in the letterhead like a real document
+- **Intro/educational copy** (`introText`): optional paragraph before the
+  pricing - the "why" behind the recommendation, same spirit as the
+  educational content Brock wanted preserved in the original PDFs
+- **Side-by-side option comparison**, not stacked cards - real tiers you
+  can actually compare at a glance, each with its own itemized checklist
+- **Authorization block**: terms language (customizable, sensible default)
+  plus a "type your name to authorize" field that acts as a signature -
+  captured as `acceptedByName`, shown on the internal invoice page and in
+  the PDF summary
+- Videos/links sections now sit under clear headers ("Product Information",
+  "Additional Resources") instead of floating with no structure
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

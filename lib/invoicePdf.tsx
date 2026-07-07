@@ -24,6 +24,7 @@ export function InvoicePdfDocument({
     total: any;
     acceptedAt: Date | null;
     acceptedOptionGroup: string | null;
+    acceptedByName: string | null;
     scheduledDate: Date | null;
   };
   subAccountName: string;
@@ -47,6 +48,7 @@ export function InvoicePdfDocument({
           <Text style={styles.badge}>
             Accepted {invoice.acceptedAt.toLocaleDateString()}
             {invoice.acceptedOptionGroup ? ` — Option: ${invoice.acceptedOptionGroup}` : ''}
+            {invoice.acceptedByName ? ` — Authorized by: ${invoice.acceptedByName}` : ''}
           </Text>
         )}
         {invoice.scheduledDate && (
