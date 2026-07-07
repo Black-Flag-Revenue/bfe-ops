@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { assertSubAccountAccess } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { SITE_TEMPLATES } from '@/lib/siteTemplates';
 
 export default async function NewSitePage({ params }: { params: { slug: string } }) {
   const subAccount = await db.subAccount.findUniqueOrThrow({ where: { slug: params.slug } });
@@ -14,6 +15,9 @@ export default async function NewSitePage({ params }: { params: { slug: string }
     const neighborhood = formData.get('neighborhood') as string;
     const heroHeadline = formData.get('heroHeadline') as string;
     const sellingPoints = formData.get('sellingPoints') as string;
+    const templateId = (formData.get('templateId') as string) || 'default';
+    const heroImage = (formData.get('heroImage') as string) || undefined;
+    const galleryImages = (formData.get('galleryImages') as string) || undefined;
     const seoTitle = (formData.get('seoTitle') as string) || null;
     const seoDescription = (formData.get('seoDescription') as string) || null;
 
@@ -39,8 +43,8 @@ export default async function NewSitePage({ params }: { params: { slug: string }
         neighborhood,
         pathSlug,
         isHomepage,
-        templateId: 'default',
-        contentJson: { heroHeadline, sellingPoints },
+        templateId,
+        contentJson: { heroHeadline, sellingPoints, heroImage, galleryImages },
         seoTitle,
         seoDescription,
         faqItems: faqItems.length > 0 ? faqItems : undefined,
@@ -62,6 +66,14 @@ export default async function NewSitePage({ params }: { params: { slug: string }
       </div>
 
       <form action={createSite} className="space-y-4 rounded-sm border border-line bg-panel p-5">
+        <label className="block">
+          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">Template</span>
+          <select name="templateId" defaultValue="default" className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm">
+            {Object.entries(SITE_TEMPLATES).map(([id, label]) => (
+              <option key={id} value={id}>{label}</option>
+            ))}
+          </select>
+        </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="isHomepage" />
           This is the homepage (renders at the bare domain, not a subpath)
@@ -89,6 +101,32 @@ export default async function NewSitePage({ params }: { params: { slug: string }
             rows={5}
             placeholder={'Free storm damage inspection\nLicensed & insured in Bexar County\n24-hour emergency response'}
             className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
+          />
+        </label>
+
+        <label className="block">
+          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
+            Hero image URL (optional)
+          </span>
+          <p className="mt-0.5 text-xs text-muted">
+            No upload yet - paste a link to a hosted photo (same pattern as logos/avatars
+            elsewhere in the app).
+          </p>
+          <input
+            name="heroImage"
+            placeholder="https://..."
+            className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="block">
+          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
+            Gallery images (one URL per line, optional)
+          </span>
+          <textarea
+            name="galleryImages"
+            rows={3}
+            placeholder={'https://...\nhttps://...'}
+            className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm font-mono"
           />
         </label>
 

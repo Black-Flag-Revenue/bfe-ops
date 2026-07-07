@@ -22,6 +22,14 @@ export function parseLinkItems(raw: string): LinkItem[] {
     .map(([label, url]) => ({ label, url }));
 }
 
+export function serializeLineItems(items: LineItem[]): string {
+  return items.map((i) => `${i.description} | ${i.qty} | ${i.unitPrice} | ${i.optionGroup}`).join('\n');
+}
+
+export function serializeLinkItems(items: LinkItem[]): string {
+  return items.map((i) => `${i.label} | ${i.url}`).join('\n');
+}
+
 export function groupLineItems(items: LineItem[]): Record<string, LineItem[]> {
   const groups: Record<string, LineItem[]> = {};
   for (const item of items) {

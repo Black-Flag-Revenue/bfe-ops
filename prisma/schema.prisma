@@ -73,6 +73,7 @@ model SubAccount {
   coldSendingDomain  String?
   coldResendDomainId String?
   coldDomainStatus   DomainStatus @default(NOT_CONFIGURED)
+  coldDomainVerifiedAt DateTime? // set once, first time status flips to VERIFIED - powers warmup ramp
   coldFromName       String?
   coldFromEmail      String?      // "hello@updates.mobilebuff.com" - name doesn't need to signal "cold" to recipients
   coldDnsRecords     Json?

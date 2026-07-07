@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { isOpsHost } from '@/lib/opsHost';
 import { resolvePublicSite } from '@/lib/publicSite';
 import { PublicSiteTemplate } from '@/components/PublicSiteTemplate';
+import { PublicSiteTemplateBold } from '@/components/PublicSiteTemplateBold';
 
 export async function generateMetadata(): Promise<Metadata> {
   const host = headers().get('host') || '';
@@ -37,8 +38,9 @@ export default async function RootPage() {
   if (!isOpsHost(host)) {
     const resolved = await resolvePublicSite(host, []);
     if (!resolved) notFound();
+    const Template = resolved.site.templateId === 'bold' ? PublicSiteTemplateBold : PublicSiteTemplate;
     return (
-      <PublicSiteTemplate
+      <Template
         subAccount={resolved.subAccount}
         contentJson={resolved.site.contentJson as any}
         city={resolved.site.city}

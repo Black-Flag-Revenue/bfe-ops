@@ -1,6 +1,8 @@
 import { db } from '@/lib/db';
 import { assertSubAccountAccess } from '@/lib/auth';
+import { sendInvoiceLink } from '@/lib/resend';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 export default async function InvoiceDetailPage({
   params,
@@ -16,13 +18,12 @@ export default async function InvoiceDetailPage({
   });
 
   const publicUrl = `${process.env.NEXT_PUBLIC_APP_URL}/estimate/${invoice.publicToken}`;
+  const isLocked = invoice.status === 'ACCEPTED' || invoice.status === 'SCHEDULED';
 
-  async function markSent() {
+  async function sendToCustomer() {
     'use server';
-    await assertSubAccountAccess(subAccount.id);
-    if (invoice.status === 'DRAFT') {
-      await db.invoice.update({ where: { id: invoice.id }, data: { status: 'SENT' } });
-    }
+    const userCtx = await assertSubAccountAccess(subAccount.id);
+    await sendInvoiceLink(invoice.id, userCtx.user.id);
     redirect(`/accounts/${params.slug}/invoices/${invoice.id}`);
   }
 
@@ -39,11 +40,21 @@ export default async function InvoiceDetailPage({
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="font-display text-3xl tracking-wide">{invoice.number}</h1>
-        <p className="mt-1 text-sm text-muted">
-          {invoice.contact ? `${invoice.contact.firstName} ${invoice.contact.lastName}` : 'No contact linked'}
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="font-display text-3xl tracking-wide">{invoice.number}</h1>
+          <p className="mt-1 text-sm text-muted">
+            {invoice.contact ? `${invoice.contact.firstName} ${invoice.contact.lastName}` : 'No contact linked'}
+          </p>
+        </div>
+        {!isLocked && (
+          <Link
+            href={`/accounts/${params.slug}/invoices/${invoice.id}/edit`}
+            className="rounded-sm border border-line px-3 py-1.5 font-mono text-[10px] uppercase tracking-wide2 hover:border-brass/60"
+          >
+            Edit
+          </Link>
+        )}
       </div>
 
       <div className="rounded-sm border border-line bg-panel p-5">
@@ -58,15 +69,19 @@ export default async function InvoiceDetailPage({
           </a>
         </div>
         <p className="mt-2 text-xs text-muted">
-          Customer link is the interactive page they view/approve. The PDF is for you - download
-          it after they accept and email it to the contractor so they know exactly what was approved.
+          The link is what the customer sees and interacts with. The PDF is for you - download it
+          after they accept and email it to the contractor so they know exactly what was approved.
         </p>
-        {invoice.status === 'DRAFT' && (
-          <form action={markSent} className="mt-2">
+        {invoice.contact?.email ? (
+          <form action={sendToCustomer} className="mt-2">
             <button className="rounded-sm bg-brass px-3 py-1.5 font-mono text-[10px] uppercase tracking-wide2 text-base">
-              Mark as Sent
+              Email This to {invoice.contact.firstName}
             </button>
           </form>
+        ) : (
+          <p className="mt-2 text-xs text-flag">
+            No contact email on file - link a contact with an email, or copy the URL above and send it yourself.
+          </p>
         )}
       </div>
 

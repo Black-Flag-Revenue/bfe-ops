@@ -306,6 +306,43 @@ payment processing, no customer self-scheduling):
    OWNER-only. No separate read-only tier - access is all-or-nothing per
    sub-account, which matches how you actually want to run this.
 
+## Email - all three addressed
+- **Campaign history**: `/accounts/[slug]/campaigns` - past sends with
+  recipient/sent/failed counts and status
+- **Suppression list**: `/accounts/[slug]/suppression` - see everyone
+  auto-excluded (bounces, complaints, unsubscribes) with reason, and a
+  "Remove from list" action if a bounce was a false positive
+- **Warmup throttling**: `coldDomainVerifiedAt` is now set the first time a
+  cold domain verifies. Daily send cap ramps automatically: 50/day (first 3
+  days) → 100/day → 250/day → 500/day → uncapped after 3 weeks. Sending a
+  campaign that would exceed today's remaining allowance throws a clear
+  error instead of silently blasting past the safe limit.
+
+## Estimates/Invoices - all three addressed
+- **Send button**: "Email This to [Name]" on the invoice detail page -
+  sends the link through the same transactional system as everything else,
+  logs into the shared contact thread, marks status SENT automatically
+- **Editing**: `/accounts/[slug]/invoices/[invoiceId]/edit` - editable
+  anytime before acceptance. Once a customer has ACCEPTED or it's been
+  SCHEDULED, editing is locked (both the Edit link and the route itself
+  redirect away) so what they approved can't quietly change after the fact
+- **ESTIMATE vs INVOICE behavior - my judgment call, flag if it's not
+  right**: Estimates keep the Good/Better/Best tier picker. Invoices show
+  one consolidated "Amount Due" with a single "Acknowledge & Confirm"
+  button instead - no tier selection, since the assumption is the work's
+  already agreed and this is just confirming the bill. Worth telling me if
+  that's not actually how you use invoices.
+
+## Public sites - both addressed
+- **Two templates now**: Classic (existing, text-forward) and Bold
+  (full-bleed photo hero, icon grid for selling points) - pick per site in
+  the creation form. Registry lives in `lib/siteTemplates.ts`, easy to add
+  more later.
+- **Images**: still URL-based, not true upload (would need Supabase Storage
+  wired in - a real but separate task). Added a hero image field and a
+  gallery (multiple images) field, same "paste a hosted link" pattern used
+  for logos/avatars everywhere else in the app.
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard

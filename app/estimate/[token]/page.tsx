@@ -26,7 +26,12 @@ export default async function EstimatePage({ params }: { params: { token: string
   const lineItems = invoice.lineItems as unknown as LineItem[];
   const links = (invoice.links as unknown as LinkItem[]) || [];
   const videos = (invoice.videos as unknown as LinkItem[]) || [];
-  const groups = groupLineItems(lineItems);
+  const isInvoice = invoice.type === 'INVOICE';
+  // Invoices are already-agreed work being billed - no tier selection, just
+  // one consolidated total to acknowledge. Estimates keep the Good/Better/Best
+  // style picker. This is a judgment call, flagged for you to weigh in on
+  // if it's not quite right for how you actually use invoices.
+  const groups = isInvoice ? { 'All Items': lineItems } : groupLineItems(lineItems);
   const groupNames = Object.keys(groups);
   const accent = invoice.subAccount.brandColor || '#B8933F';
 
@@ -71,10 +76,10 @@ export default async function EstimatePage({ params }: { params: { token: string
         {invoice.acceptedAt ? (
           <div style={{ marginTop: 32, padding: 20, borderRadius: 8, background: `${accent}15`, border: `1px solid ${accent}40` }}>
             <div style={{ fontWeight: 700, color: accent }}>
-              ✓ Accepted — {invoice.acceptedOptionGroup}
+              {isInvoice ? '✓ Acknowledged' : `✓ Accepted — ${invoice.acceptedOptionGroup}`}
             </div>
             <p style={{ marginTop: 6, fontSize: 14, color: '#444' }}>
-              {invoice.subAccount.name} has been notified and will be in touch to schedule.
+              {invoice.subAccount.name} has been notified{isInvoice ? '.' : ' and will be in touch to schedule.'}
             </p>
           </div>
         ) : (
@@ -95,8 +100,12 @@ export default async function EstimatePage({ params }: { params: { token: string
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <input type="radio" name="optionGroup" value={groupName} required />
-                      <span style={{ fontWeight: 700, fontSize: 18 }}>{groupName}</span>
+                      {!isInvoice && (
+                        <input type="radio" name="optionGroup" value={groupName} required />
+                      )}
+                      {isInvoice && <input type="hidden" name="optionGroup" value={groupName} />}
+                      {!isInvoice && <span style={{ fontWeight: 700, fontSize: 18 }}>{groupName}</span>}
+                      {isInvoice && <span style={{ fontWeight: 700, fontSize: 18 }}>Amount Due</span>}
                       <span style={{ marginLeft: 'auto', fontWeight: 800, fontSize: 20, color: accent }}>
                         ${total.toLocaleString()}
                       </span>
@@ -168,7 +177,7 @@ export default async function EstimatePage({ params }: { params: { token: string
                 cursor: 'pointer',
               }}
             >
-              Approve Selected Option
+              {isInvoice ? 'Acknowledge & Confirm' : 'Approve Selected Option'}
             </button>
           </form>
         )}

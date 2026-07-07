@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { db } from './db';
+import { getDailyWarmupCap } from './warmup';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -54,13 +55,21 @@ export async function refreshDomainStatus(subAccountId: string, purpose: DomainP
   if (error) throw new Error(error.message);
 
   const status = data!.status === 'verified' ? 'VERIFIED' : data!.status === 'failed' ? 'FAILED' : 'PENDING';
+  const wasAlreadyVerified =
+    purpose === 'transactional' ? subAccount.domainStatus === 'VERIFIED' : subAccount.coldDomainStatus === 'VERIFIED';
 
   await db.subAccount.update({
     where: { id: subAccountId },
     data:
       purpose === 'transactional'
         ? { domainStatus: status, dnsRecords: data!.records as any }
-        : { coldDomainStatus: status, coldDnsRecords: data!.records as any },
+        : {
+            coldDomainStatus: status,
+            coldDnsRecords: data!.records as any,
+            ...(purpose === 'cold' && status === 'VERIFIED' && !wasAlreadyVerified
+              ? { coldDomainVerifiedAt: new Date() }
+              : {}),
+          },
   });
 
   return status;
@@ -131,6 +140,42 @@ export async function sendContactReply({
 }
 
 /**
+ * Emails the customer their estimate/invoice link directly, using the same
+ * transactional domain and auto sign-off as everything else - and logs it
+ * into the shared contact thread so it's visible alongside other correspondence.
+ */
+export async function sendInvoiceLink(invoiceId: string, userId: string) {
+  const invoice = await db.invoice.findUniqueOrThrow({
+    where: { id: invoiceId },
+    include: { subAccount: true, contact: true },
+  });
+
+  if (!invoice.contact?.email) {
+    throw new Error('This estimate has no contact with an email on file - link it to a contact first.');
+  }
+
+  const publicUrl = `${process.env.NEXT_PUBLIC_APP_URL}/estimate/${invoice.publicToken}`;
+  const typeLabel = invoice.type === 'ESTIMATE' ? 'estimate' : 'invoice';
+
+  const html = `
+    <p>Hi ${invoice.contact.firstName},</p>
+    <p>Here's your ${typeLabel} ${invoice.number} from ${invoice.subAccount.name}:</p>
+    <p><a href="${publicUrl}">${publicUrl}</a></p>
+  `;
+
+  await sendContactReply({
+    contactId: invoice.contact.id,
+    userId,
+    subject: `Your ${typeLabel} from ${invoice.subAccount.name} - ${invoice.number}`,
+    html,
+  });
+
+  if (invoice.status === 'DRAFT') {
+    await db.invoice.update({ where: { id: invoiceId }, data: { status: 'SENT' } });
+  }
+}
+
+/**
  * Sends a mass campaign to every eligible contact in the sub-account matching
  * the given tags. Uses the plain transactional send() API (not Audiences) so
  * there's no per-contact billing - just per-email volume.
@@ -168,6 +213,24 @@ export async function sendCampaign(campaignId: string) {
         : {}),
     },
   });
+
+  const dailyCap = getDailyWarmupCap(subAccount.coldDomainVerifiedAt);
+  if (dailyCap !== null) {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const sentToday = await db.campaignRecipient.count({
+      where: { campaign: { subAccountId: subAccount.id }, sentAt: { gte: startOfToday } },
+    });
+    const remainingToday = dailyCap - sentToday;
+
+    if (contacts.length > remainingToday) {
+      throw new Error(
+        `Warmup limit: ${subAccount.name}'s cold domain can send ${remainingToday} more email(s) today ` +
+          `(cap ${dailyCap}/day while it's still warming up, ${sentToday} already sent today). ` +
+          `This campaign has ${contacts.length} recipients - narrow the audience or try again tomorrow.`
+      );
+    }
+  }
 
   await db.emailCampaign.update({
     where: { id: campaignId },

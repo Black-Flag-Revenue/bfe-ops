@@ -17,6 +17,8 @@ type SubAccountForTemplate = {
 type SiteContent = {
   heroHeadline?: string;
   sellingPoints?: string;
+  heroImage?: string;
+  galleryImages?: string; // newline-separated URLs
 };
 
 type FaqItem = { question: string; answer: string };
@@ -103,6 +105,14 @@ export function PublicSiteTemplate({
       </header>
 
       <section style={{ padding: '80px 32px', textAlign: 'center', maxWidth: 800, margin: '0 auto' }}>
+        {contentJson.heroImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={contentJson.heroImage}
+            alt=""
+            style={{ width: '100%', maxHeight: 320, objectFit: 'cover', borderRadius: 12, marginBottom: 32 }}
+          />
+        )}
         {locationLabel && (
           <div style={{ color: accent, fontWeight: 600, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1 }}>
             {locationLabel}
@@ -139,6 +149,17 @@ export function PublicSiteTemplate({
                 <span style={{ color: accent, fontWeight: 900, fontSize: 20 }}>✓</span>
                 {point}
               </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {contentJson.galleryImages && (
+        <section style={{ padding: '0 32px 60px', maxWidth: 900, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+            {contentJson.galleryImages.split('\n').map((url) => url.trim()).filter(Boolean).map((url, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={i} src={url} alt="" style={{ width: '100%', height: 180, objectFit: 'cover', borderRadius: 8 }} />
             ))}
           </div>
         </section>
