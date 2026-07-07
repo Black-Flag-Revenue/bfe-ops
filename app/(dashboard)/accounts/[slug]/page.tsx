@@ -120,7 +120,7 @@ function NavCard({ href, icon: Icon, title, desc }: { href: string; icon: any; t
         <Icon size={18} strokeWidth={1.75} />
       </div>
       <div className="flex-1">
-        <div className="font-display text-base leading-tight">{title}</div>
+        <div className="font-display text-base leading-tight text-ink">{title}</div>
         <div className="mt-0.5 text-xs text-muted">{desc}</div>
       </div>
       <ArrowRight size={16} className="mt-2 shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100" />

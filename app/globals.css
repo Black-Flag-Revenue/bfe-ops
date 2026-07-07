@@ -8,5 +8,12 @@
 }
 
 * {
-  scrollbar-color: #262B28 #0B0D0C;
+  scrollbar-color: #33382F #0B0D0C;
+}
+
+/* Subtle depth on every card/panel surface, applied globally so we don't
+   have to touch every individual page - the bg-panel class is used
+   consistently everywhere as the "raised surface" pattern. */
+.bg-panel {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.02);
 }

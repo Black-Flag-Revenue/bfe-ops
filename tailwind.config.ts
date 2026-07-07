@@ -6,8 +6,8 @@ const config: Config = {
     extend: {
       colors: {
         base: '#0B0D0C',        // near-black background
-        panel: '#141715',       // slightly raised surface
-        line: '#262B28',        // hairline borders
+        panel: '#1C201D',       // raised surface - brighter than before so cards actually separate from bg
+        line: '#33382F',        // hairline borders - brighter for definition against the new panel color
         ink: '#EDEAE3',         // primary text, warm off-white
         muted: '#8A8F8B',       // secondary text
         brass: '#B8933F',       // signature accent - insignia gold, not terracotta
