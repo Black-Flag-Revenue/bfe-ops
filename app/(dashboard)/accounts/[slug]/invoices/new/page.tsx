@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { assertSubAccountAccess } from '@/lib/auth';
 import { parseLineItems, parseLinkItems, groupTotal } from '@/lib/invoiceParsing';
+import { InvoiceContentAssist } from '@/components/InvoiceContentAssist';
 import { redirect } from 'next/navigation';
 
 export default async function NewInvoicePage({ params }: { params: { slug: string } }) {
@@ -54,7 +55,7 @@ export default async function NewInvoicePage({ params }: { params: { slug: strin
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="font-display text-3xl tracking-wide">New Estimate / Invoice</h1>
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">New Estimate / Invoice</h1>
 
       <form action={createInvoice} className="space-y-5 rounded-sm border border-line bg-panel p-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -85,22 +86,6 @@ export default async function NewInvoicePage({ params }: { params: { slug: strin
 
         <label className="block">
           <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
-            Intro / educational copy (optional) - shown before the pricing options
-          </span>
-          <p className="mt-1 text-xs text-muted">
-            This is the "why" - explain the problem, the recommended approach, whatever context
-            helps them make a confident decision. Shows as plain paragraph text on the page.
-          </p>
-          <textarea
-            name="introText"
-            rows={4}
-            placeholder="Based on our inspection, we found storm damage affecting approximately 40% of your roof's surface area..."
-            className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm"
-          />
-        </label>
-
-        <label className="block">
-          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
             Line items - one per line: Description | Qty | Unit Price | Option Group (optional)
           </span>
           <p className="mt-1 text-xs text-muted">
@@ -123,29 +108,7 @@ export default async function NewInvoicePage({ params }: { params: { slug: strin
           <input name="taxRate" type="number" step="0.01" placeholder="8.25" className="mt-1 w-32 rounded-sm border border-line bg-base px-3 py-2 text-sm" />
         </label>
 
-        <label className="block">
-          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
-            Supporting links - one per line: Label | URL
-          </span>
-          <textarea
-            name="links"
-            rows={3}
-            placeholder={'Before/after photos | https://...\nMaterial warranty info | https://...'}
-            className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm font-mono"
-          />
-        </label>
-
-        <label className="block">
-          <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">
-            Videos - one per line: Label | URL (YouTube/Vimeo embed automatically)
-          </span>
-          <textarea
-            name="videos"
-            rows={3}
-            placeholder={'Walkthrough of the damage | https://youtube.com/watch?v=...'}
-            className="mt-1 w-full rounded-sm border border-line bg-base px-3 py-2 text-sm font-mono"
-          />
-        </label>
+        <InvoiceContentAssist subAccountId={subAccount.id} />
 
         <label className="block">
           <span className="font-mono text-[10px] uppercase tracking-wide2 text-muted">

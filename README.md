@@ -428,6 +428,26 @@ The original version was too bare - rebuilt as a real document-style page:
 - Videos/links sections now sit under clear headers ("Product Information",
   "Additional Resources") instead of floating with no structure
 
+## AI Content Assist - the actual point of the rebuild
+This is what you were asking for: instead of manually typing links/videos,
+describe the job (materials, brands, scope) on the New Estimate form and it
+searches the web for real supporting content automatically:
+- Manufacturer spec sheets / warranty pages for named products
+- Relevant product/installation videos if they genuinely exist
+- A drafted educational intro paragraph
+
+**Setup required - this is a real cost, be aware:**
+1. Go to console.anthropic.com (different from your claude.ai account -
+   this is Anthropic's developer platform, billed separately per API call)
+2. Create an API key
+3. Add it to Replit Secrets as `ANTHROPIC_API_KEY`
+
+Each "Generate Content" click costs a small amount (a few cents typically,
+web search + a moderate response) - not free, but far cheaper than the
+time it'd take to manually research and format this per estimate. Nothing
+generated is saved until you review it and hit Create on the form - it's a
+draft, not automatic.
+
 ## Next sessions
 - **Day 2**: CRM UI (contacts, pipeline board) + seed script for sub-accounts (Scottish Tom, Mobile Buff, etc.) + employee invite flow
 - **Day 3**: Invoicing (port your ReportLab logic to `@react-pdf/renderer` or keep PDF gen server-side in Python via a small API route) + owner dashboard
